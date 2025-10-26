@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ title }} - Кстовская митрополия{% endblock %}
+{% block extra_css %}
+    {{ block.super }}
+        .deal-card-link { /* Новый класс для ссылки-карточки */
+            text-decoration: none; /* Убираем подчеркивание */
+            color: inherit; /* Наследуем цвет текста от родителя */
+            display: block; /* Чтобы ссылка занимала всю область карточки */
+            cursor: pointer; /* Для индикации кликабельности */
+        }
+        .deal-card {
+            background-color: #fefefe;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .deal-card:hover { /* Эффект при наведении на саму карточку */
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .deal-card h2 {
+            color: var(--accent-color); /* Сохраняем цвет заголовка */
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.8rem;
+        }
+        .deal-card p {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin-bottom: 0;
+        }
+        .no-deals {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        @media (max-width: 768px) {
+            .deals-list-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .deals-list-container h1 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+            .deal-card h2 {
+                font-size: 1.5rem;
+            }
+        }
+{% endblock %}
+{% block content %}
+    <div class="deals-list-container">
+        <h1>Направления деятельности Кстовской митрополии</h1>
+        {% if deal_list %}
+            {% for deal in deal_list %}
+                {# === Изменение здесь: Оборачиваем карточку в ссылку === #}
+                <a href="{% url 'temple:deal_detail' deal.pk %}" class="deal-card-link">
+                    <div class="deal-card">
+                        <h2>{{ deal.stream }}</h2>
+                        <p>{{ deal.description }}</p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="no-deals">Информация о направлениях деятельности пока отсутствует.</p>
+        {% endif %}
+    </div>
+{% endblock content %}

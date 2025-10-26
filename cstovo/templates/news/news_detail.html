@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %} {# Для {% now %} #}
+{% block title %}{{ news.title }} - Новости Кстовской митрополии{% endblock %}
+{% block extra_css %}
+    {{ block.super }} {# Сохраняет стили из родительского extra_css #}
+    /* Стили, специфичные для детальной страницы новости */
+    .news-detail-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .news-detail-image {
+        width: 100%;
+        height: auto;
+        max-height: 450px; /* Ограничиваем высоту изображения */
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        display: block;
+    }
+    .news-detail-title {
+        font-size: 2.8rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    .news-detail-date {
+        font-size: 1rem;
+        color: var(--secondary-color);
+        margin-bottom: 2rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+    .news-detail-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+    .news-detail-back-link {
+        display: inline-block;
+        margin-top: 3rem;
+        padding: 0.8rem 1.5rem;
+        background-color: var(--accent-color);
+        color: var(--text-color);
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color var(--transition-speed) ease;
+    }
+    .news-detail-back-link:hover {
+        background-color: var(--hover-color);
+    }
+           /* --- Стили для галереи изображений (слайдера) --- */
+    .image-gallery {
+        position: relative;
+        width: 100%;
+        max-width: 960px; /* Ограничим ширину галереи */
+        margin: 0 auto 2.5rem auto;
+        overflow: hidden; /* Скрывает изображения, выходящие за границы */
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background-color: #f0f0f0; /* Фоновый цвет для contain */
+        min-height: 300px; /* Минимальная высота галереи */
+        display: flex; /* Для центрирования изображений */
+        align-items: center;
+        justify-content: center;
+    }
+    .gallery-inner {
+        display: flex; /* Изображения располагаются в ряд */
+        transition: transform 0.5s ease-in-out; /* Анимация для листания */
+        height: 100%; /* Занимает всю высоту родителя */
+        align-items: center;
+    }
+    .gallery-slide {
+        flex: 0 0 calc(100% / 3); /* <--- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Каждое изображение занимает 1/3 ширины */
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 10px; /* Отступ вокруг каждого изображения */
+    }
+    .gallery-slide img {
+        max-width: 100%;
+        max-height: 100%; /* Ограничиваем высоту изображения контейнером */
+        height: auto; /* Сохраняем пропорции */
+        object-fit: contain; /* Чтобы изображение не обрезалось и не искажалось */
+        display: block;
+    }
+    .gallery-control {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 1.5rem;
+        border-radius: 5px;
+        user-select: none; /* Предотвращает выделение текста */
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+    .gallery-control:hover {
+        opacity: 1;
+    }
+    .gallery-control.prev {
+        left: 10px;
+    }
+    .gallery-control.next {
+        right: 10px;
+    }
+    /* === Стили для модального окна (лайтбокса)                             === */
+
+    .lightbox-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9); /* Темный полупрозрачный фон */
+        display: flex; /* Используем flexbox для центрирования изображения */
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* Очень высокий z-index, чтобы быть поверх всего */
+        opacity: 0; /* Изначально скрыто */
+        visibility: hidden; /* Изначально скрыто */
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .lightbox-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .lightbox-content {
+        position: relative;
+        max-width: 90%; /* Максимальная ширина контента модалки */
+        max-height: 90%; /* Максимальная высота контента модалки */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .lightbox-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain; /* Изображение не обрезается и не искажается */
+        display: block;
+    }
+    .lightbox-close {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .lightbox-close:hover,
+    .lightbox-close:focus {
+        color: #ccc;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .lightbox-nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 2rem; /* Увеличим размер для лучшей видимости */
+        border-radius: 5px;
+        user-select: none;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        z-index: 10000; /* Выше, чем изображение */
+    }
+    .lightbox-nav-button:hover {
+        opacity: 1;
+    }
+    .lightbox-nav-button.prev {
+        left: 10px;
+    }
+    .lightbox-nav-button.next {
+        right: 10px;
+    }
+    @media (max-width: 992px) { /* Изменим брейкпойнт для адаптации карусели */
+        .image-gallery {
+            max-width: 700px; /* Для средних экранов */
+            min-height: 250px;
+        }
+        .gallery-slide {
+             flex: 0 0 calc(100% / 2); /* На планшетах - по 2 фотографии */
+        }
+    }
+    @media (max-width: 768px) {
+        .news-detail-container {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        .news-detail-container h1 {
+            font-size: 2.5rem;
+        }
+        .news-detail-title {
+            font-size: 2rem;
+        }
+        .image-gallery {
+            min-height: 300px;
+        }
+        .gallery-slide {
+            flex: 0 0 100%; /* На мобильных - по 1 фотографии */
+        }
+        .news-detail-content {
+            font-size: 1rem;
+        }
+    }
+{% endblock %}
+{% block content %}
+<div class="news-detail-container">
+    {% if news.image %}
+        <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-detail-image">
+    {% endif %}
+    <h1 class="news-detail-title">{{ news.title }}</h1>
+    <p class="news-detail-date">{{ news.date|date:"d M Y" }}</p>
+
+
+    {% if news.image or news_gallery %}
+        <div class="image-gallery">
+            <div class="gallery-inner">
+                {# Добавляем обложку новости, если она есть #}
+                {% if news.image %}
+                    <div class="gallery-slide" data-image-src="{{ news.image.url }}"> {# Добавлен data-image-src #}
+                        <img src="{{ news.image.url }}" alt="{{ news.title }}">
+                    </div>
+                {% endif %}
+                {# Добавляем изображения из NewsImage #}
+                {% for img in news_gallery %}
+                    <div class="gallery-slide" data-image-src="{{ img.image.url }}"> {# Добавлен data-image-src #}
+                        <img src="{{ img.image.url }}" alt="{{ news.title }} - {{ forloop.counter }}">
+                    </div>
+                {% endfor %}
+            </div>
+            {% if news.image or news_gallery|length > 1 %} {# Показываем кнопки только если больше 1 изображения #}
+                <button class="gallery-control prev">&lt;</button>
+                <button class="gallery-control next">&gt;</button>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="news-detail-description">
+        {{ news.description|linebreaks }} {# Преобразует переносы строк в <p> теги #}
+    </div>
+    <a href="{% url 'temple:news' %}" class="news-detail-back-link">&larr; Ко всем новостям</a>
+</div>
+<div id="lightboxOverlay" class="lightbox-overlay">
+    <span class="lightbox-close">&times;</span>
+    <div class="lightbox-content">
+        <img id="lightboxImage" class="lightbox-image" src="" alt="Full-screen image">
+    </div>
+    <button class="lightbox-nav-button prev" id="lightboxPrev">&lt;</button>
+    <button class="lightbox-nav-button next" id="lightboxNext">&gt;</button>
+</div>
+{% endblock content %}
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- СЛАЙДЕР ГАЛЕРЕИ ---
+            const gallery = document.querySelector('.image-gallery');
+            if (!gallery) {
+                const lightboxOverlay = document.getElementById('lightboxOverlay');
+                if (lightboxOverlay) {
+                    lightboxOverlay.remove();
+                }
+                return;
+            }
+            const galleryInner = gallery.querySelector('.gallery-inner');
+            const slides = gallery.querySelectorAll('.gallery-slide'); // Это теперь отдельные блоки для каждой картинки
+            const prevBtn = gallery.querySelector('.gallery-control.prev');
+            const nextBtn = gallery.querySelector('.gallery-control.next');
+            let currentIndex = 0;
+            const totalSlides = slides.length;
+            let slidesPerPage = 3; // <--- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: сколько слайдов видно одновременно
+            let slideWidth = 0; // Ширина одного слайда, будет вычислена динамически
+            // Функция для определения количества видимых слайдов в зависимости от ширины экрана
+            function getSlidesPerPage() {
+                if (window.innerWidth <= 768) {
+                    return 1; // На мобильных 1 фото
+                } else if (window.innerWidth <= 992) {
+                    return 2; // На планшетах 2 фото
+                } else {
+                    return 3; // На больших экранах 3 фото
+                }
+            }
+            // Функция для обновления ширины слайда и количества слайдов на странице
+            function updateSlidesPerPageAndWidth() {
+                slidesPerPage = getSlidesPerPage();
+                // Ширина одного слайда = (ширина контейнера / количество видимых слайдов)
+                slideWidth = gallery.offsetWidth / slidesPerPage; // gallery.offsetWidth - общая видимая ширина
+                updateGalleryPosition(); // Обновить позицию галереи после изменения ширины
+            }
+            if (totalSlides <= slidesPerPage) { // Скрываем кнопки, если изображений меньше или равно видимым
+                if (prevBtn) prevBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
+                 const lightboxOverlay = document.getElementById('lightboxOverlay');
+                if (lightboxOverlay) {
+                    lightboxOverlay.remove();
+                }
+                return;
+            }
+            // Обновляем позицию галереи
+            function updateGalleryPosition() {
+                const offset = -currentIndex * slideWidth;
+                galleryInner.style.transform = `translateX(${offset}px)`; // Смещение в px
+            }
+            function showNextSlide() {
+                if (currentIndex < totalSlides - slidesPerPage) { // Если еще есть место для сдвига
+                    currentIndex++;
+                } else {
+                    currentIndex = 0; // Возвращаемся в начало, если достигли конца
+                }
+                updateGalleryPosition();
+            }
+            function showPrevSlide() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                } else {
+                    currentIndex = totalSlides - slidesPerPage; // Переход в конец, если в начале
+                }
+                updateGalleryPosition();
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', showNextSlide);
+            }
+            if (prevBtn) {
+                prevBtn.addEventListener('click', showPrevSlide);
+            }
+            // Инициализация при загрузке
+            updateSlidesPerPageAndWidth();
+            // Обновление при изменении размера окна
+            window.addEventListener('resize', () => {
+                updateSlidesPerPageAndWidth();
+                // Также убедимся, что currentIndex не выходит за пределы после ресайза
+                if (currentIndex > totalSlides - slidesPerPage) {
+                    currentIndex = totalSlides - slidesPerPage;
+                }
+                updateGalleryPosition();
+            });
+            // --- ДОБАВЛЯЕМ СТРОКИ ДЛЯ АВТОМАТИЧЕСКОГО ЛИСТАНИЯ ЗДЕСЬ ---
+            let autoSlideInterval;
+            const autoSlideDelay = 3000; // Задержка в миллисекундах (5 секунд)
+            function startAutoSlide() {
+                // Очищаем предыдущий интервал, чтобы избежать накопления
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(showNextSlide, autoSlideDelay);
+            }
+            function stopAutoSlide() {
+                clearInterval(autoSlideInterval);
+            }
+            // Запускаем автолистание при загрузке страницы
+            startAutoSlide();
+            // Опционально: Останавливаем автолистание при наведении мыши на галерею
+            // и возобновляем, когда мышь уходит
+            gallery.addEventListener('mouseenter', stopAutoSlide);
+            gallery.addEventListener('mouseleave', startAutoSlide);
+            // Также останавливаем автолистание при клике на кнопки навигации
+            if (nextBtn) nextBtn.addEventListener('click', () => { stopAutoSlide(); startAutoSlide(); });
+            if (prevBtn) prevBtn.addEventListener('click', () => { stopAutoSlide(); startAutoSlide(); });
+            // --- ФУНКЦИОНАЛ ЛАЙТБОКСА (ПОЛНОЭКРАННЫЙ ПРОСМОТР) ---
+            const lightboxOverlay = document.getElementById('lightboxOverlay');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxClose = document.querySelector('.lightbox-close');
+            const lightboxPrev = document.getElementById('lightboxPrev'); // Новая кнопка
+            const lightboxNext = document.getElementById('lightboxNext'); // Новая кнопка
+
+            let currentLightboxIndex = 0;
+
+            function updateLightboxImage() {
+                // Если totalSlides = 0 (на случай, если все изображения удалены)
+                if (totalSlides === 0) return; 
+                
+                const imageUrl = slides[currentLightboxIndex].dataset.imageSrc;
+                if (imageUrl) {
+                    lightboxImage.src = imageUrl;
+                }
+            }
+
+            slides.forEach(slide => { // Используем slides, так как каждый slide кликабелен
+                slide.addEventListener('click', () => {
+                    const imageUrl = slide.dataset.imageSrc;
+                    if (imageUrl) {
+                        lightboxImage.src = imageUrl;
+                        lightboxOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                });
+            });
+
+            // Навигация в лайтбоксе - Следующее изображение
+            lightboxNext.addEventListener('click', () => {
+                currentLightboxIndex = (currentLightboxIndex + 1) % totalSlides;
+                updateLightboxImage();
+            });
+            // Навигация в лайтбоксе - Предыдущее изображение
+            lightboxPrev.addEventListener('click', () => {
+                currentLightboxIndex = (currentLightboxIndex - 1 + totalSlides) % totalSlides;
+                updateLightboxImage();
+            });
+
+            lightboxClose.addEventListener('click', () => {
+                lightboxOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            lightboxOverlay.addEventListener('click', (event) => {
+                if (event.target === lightboxOverlay) {
+                    lightboxOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && lightboxOverlay.classList.contains('active')) {
+                    lightboxOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        /* Hero: контейнер секции на всю ширину, фиксирует позиционирование и высоту */
+        .hero-section {
+          isolation: isolate;              /* создаёт новый стек контекста */
+          margin-bottom: 2.5rem;           /* зазор после hero, чтобы новости не прилипали */
+          position: relative;              /* базовое позиционирование контейнера */
+          min-height: 70vh;                /* высота hero */
+          display: grid;                   /* центрирование контента */
+          place-items: center;
+          text-align: center;
+          color: #fff;
+          overflow: hidden;
+          background-color: #1c1c1c;       /* фоновая заглушка */
+          padding-top: var(--header-height); /* если шапка фиксированная */
+        }
+
+        /* Hero: фоновое изображение на всю область без искажений */
+        .hero-background-image {
+            position: absolute;
+            inset: 0;          /* top/left/right/bottom: 0 */
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Заполняем блок, сохраняя пропорции (возможна лёгкая обрезка по краям) */
+            z-index: 0;
+        }
+
+        /* Hero: полупрозрачное затемнение поверх изображения */
+        .hero-bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45); /* «Слегка затемнено» */
+            z-index: 1;
+        }
+
+        /* Hero: обёртка текста поверх затемнения */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 1rem;
+            max-width: 960px; /* Ограничиваем ширину текста на очень широких экранах */
+        }
+
+        /* Hero: главный заголовок */
+        .hero-content h1 {
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff !important;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5); /* Улучшаем читаемость на светлых фото */
+            font-size: clamp(28px, 5vw, 56px);     /* Адаптивный размер */
+        }
+
+        /* Hero: подзаголовок */
+        .hero-content p {
+            margin: 0;
+            opacity: 0.95;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+            color: #fff !important;
+            font-size: clamp(16px, 2.5vw, 22px);   /* Адаптивный размер */
+            line-height: 1.4;
+        }
+
+        /* Ниже — стили списка новостей (оставлены как есть, без правок логики и внешнего вида) */
+        .news-list-page-container {
+          position: relative;              /* создаём собственный контекст для верного наложения */
+          z-index: 3;                      /* выше любых элементов hero */
+          clear: both;                     /* если где-то были float — начинаем ниже */
+          margin-top: 0;
+        }
+        .news-list-page-container h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+        .news-cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        .news-card {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            padding: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .news-image-wrapper {
+            flex-shrink: 0;
+            width: 250px;
+            height: 280px;
+            margin-right: 1.5rem;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .news-card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .news-card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card-content h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+        .news-date {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+        .news-card-content p {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        .read-more-button {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            align-self: flex-start;
+            transition: background-color var(--transition-speed) ease;
+        }
+        .read-more-button:hover {
+            background-color: var(--hover-color);
+        }
+        .no-news {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        .all-news-button-wrapper {
+            margin-top: 3rem;
+            text-align: center;
+        }
+        .all-news-button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color var(--transition-speed) ease;
+        }
+        .all-news-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* Адаптивность: корректируем размеры hero-текста и карточек новостей */
+        @media (max-width: 992px) {
+            .news-list-page-container h1 { font-size: 2rem; }
+            .news-card { flex-direction: column; align-items: center; padding: 1rem; }
+            .news-image-wrapper { width: 100%; height: 180px; margin-right: 0; margin-bottom: 1rem; }
+            .news-card-content { text-align: center; }
+            .news-card-content h2 { font-size: 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .hero-section { min-height: 55vh; }
+        }
+    </style>
+{% endblock %}
+
+{% block main_out %}
+    <!-- Hero: первая секция с фоновым изображением и текстом -->
+    <section class="hero-section">
+        <!-- Hero: затемняющая подложка поверх изображения -->
+        <div class="hero-bg-overlay"></div>
+
+        <!-- Hero: фон-картинка из контекста base_image -->
+        {% if base_image %}
+            <img src="{{ base_image.image.url }}" alt="Фоновое изображение" class="hero-background-image">
+        {% endif %}
+
+        <!-- Hero: текстовый контент поверх изображения -->
+        <div class="hero-content">
+            <h1>Кстовская митрополия</h1>
+            <p>Добро пожаловать в мир веры и благочестия</p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block content %}
+    <!-- Блок новостей: оставлен без изменений по структуре и стилям -->
+    <div class="news-list-page-container">
+        <h1>Главные новости</h1>
+        <div class="news-cards-list">
+            {% for news_item in main_news_list %}
+                <div class="news-card">
+                    {% if news_item.image %}
+                        <div class="news-image-wrapper">
+                            <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-card-image">
+                        </div>
+                    {% endif %}
+                    <div class="news-card-content">
+                        <h2>{{ news_item.title }}</h2>
+                        <p class="news-date">{{ news_item.date|date:"d M Y" }}</p>
+                        <p>{{ news_item.description|truncatechars:150 }}</p>
+                        <a href="{% url 'temple:news_detail' news_item.pk %}" class="read-more-button">Читать далее</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="no-news">На данный момент главных новостей нет.</p>
+            {% endfor %}
+        </div>
+
+        <h1>Все новости</h1>
+        <div class="news-cards-list">
+            {% for news_item in all_news_list %}
+                <div class="news-card">
+                    {% if news_item.image %}
+                        <div class="news-image-wrapper">
+                            <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-card-image">
+                        </div>
+                    {% endif %}
+                    <div class="news-card-content">
+                        <h2>{{ news_item.title }}</h2>
+                        <p class="news-date">{{ news_item.date|date:"d M Y" }}</p>
+                        <p>{{ news_item.description|truncatechars:150 }}</p>
+                        <a href="{% url 'temple:news_detail' news_item.pk %}" class="read-more-button">Читать далее</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="no-news">На данный момент новостей нет.</p>
+            {% endfor %}
+        </div>
+
+        <div class="all-news-button-wrapper">
+            <a href="{% url 'temple:news' %}" class="all-news-button">Ко всем новостям</a>
+        </div>
+    </div>
+{% endblock %}

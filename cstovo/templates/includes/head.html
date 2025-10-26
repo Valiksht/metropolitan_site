@@ -1,0 +1,333 @@
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адаптивный Заголовок с Навигацией</title>
+    <style>
+        :root {
+            --primary-color: #3999f3ff; /* Темно-синий, для заголовков, фона хедера/футера */
+            --secondary-color: #616161; /* Серый, для текста */
+            --accent-color: #3999f3ff; /* Оранжевый, для акцентов и кнопок */
+            --text-color: #ffffff;
+            --text-color-light: #ffffff; /* Белый, для текста на темном фоне */
+            --text-color-dark: #212121; /* Очень темный, почти черный */
+            --hover-color: #e65100; /* Темно-оранжевый при наведении */
+            --mobile-menu-bg: rgba(0, 0, 0, 0.9); /* Полупрозрачный черный для мобильного меню */
+            --transition-speed: 0.3s;
+            --header-height: 192px; /* Установим фиксированную высоту хедера */
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #fff;
+            color: var(--secondary-color);
+        }
+        a {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+a:hover, a:focus {
+    color: var(--hover-color);
+    text-decoration: underline;
+}
+
+/* Хедер (Header) */
+.main-header {
+    background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  height: var(--header-height);
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  z-index: 1000;
+    backdrop-filter: saturate(160%) blur(6px);
+}
+/* Делаем хедер непрозрачным при прокрутке (нужен JS) */
+.main-header.scrolled {
+    background-color: var(--primary-color); /* Например, основной цвет */
+}
+.header-container {
+    max-width: 1200px; /* Ограничиваем ширину содержимого хедера */
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-color-light);
+    text-decoration: none;
+    flex-shrink: 0; /* Не сжимать логотип */
+    white-space: normal;
+}
+
+
+
+        header {
+            background: transparent !important;
+            color: inherit !important;
+            box-shadow: none !important;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+            white-space: normal;
+        }
+        .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-menu li {
+        position: relative; /* Важно: Это делает li родителем для абсолютного позиционирования */
+        /* ... (существующие стили) ... */
+    }
+        .nav-menu li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+            transition: color var(--transition-speed) ease;
+        }
+        .nav-menu li a:hover,
+        .nav-menu li a:focus {
+            color: var(--hover-color);
+            text-decoration: underline;
+            outline: none;
+        }
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            cursor: pointer;
+            position: relative;
+            z-index: 1100;
+            border: none;
+            background: transparent;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+        .hamburger-menu span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: var(--text-color);
+            transition: all var(--transition-speed) ease-in-out;
+            border-radius: 2px;
+        }
+        .hamburger-menu.open span:nth-child(1) {
+            transform: translateY(11px) rotate(45deg);
+        }
+        .hamburger-menu.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-menu.open span:nth-child(3) {
+            transform: translateY(-11px) rotate(-45deg);
+        }
+
+    /* === Стили для выпадающего меню === */
+    .has-dropdown .dropdown-arrow {
+        margin-left: 5px;
+        font-size: 0.8em;
+        vertical-align: middle;
+        transition: transform 0.3s ease;
+    }
+    .has-dropdown:hover .dropdown-arrow {
+        transform: rotate(180deg); /* Стрелка поворачивается при наведении */
+    }
+    .dropdown-menu {
+        display: none; /* Изначально скрыто */
+        position: absolute;
+        top: 100%; /* Помещает выпадающий список прямо под родительским элементом */
+        left: 0;
+        right: auto;
+        background-color: #fff; /* Фон выпадающего списка */
+        min-width: 440px; /* Минимальная ширина */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 1000; /* Чтобы выпадающий список был поверх других элементов */
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-radius: 5px;
+        overflow: hidden; /* Для красивых границ */
+    }
+    .dropdown-menu li a {
+        color: var(--primary-color);
+        padding: 10px 15px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.2s ease;
+    }
+    .dropdown-menu li a:hover {
+        background-color: #f0f0f0;
+        color: var(--hover-color);
+    }
+    /* Показываем выпадающий список при наведении на родительский li */
+    .has-dropdown:hover > .dropdown-menu {
+        display: block;
+    }
+
+        @media (max-width: 992px) {
+            .nav-menu {
+                display: none;
+                flex-direction: column;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100%;
+                height: 100vh;
+                background-color: var(--mobile-menu-bg);
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                transform: translateX(100%);
+                transition: transform var(--transition-speed) ease-in-out;
+                z-index: 999; /* Добавлено, чтобы меню было поверх всего */
+            }
+            .nav-menu.open {
+                display: flex;
+                transform: translateX(0);
+                color: var(--accent-color) !important;
+            }
+            .nav-menu li {
+                margin: 1rem 0;
+            }
+            .nav-menu li a {
+                font-size: 1.5rem;
+                color: var(--accent-color);
+            }
+            .hamburger-menu {
+                display: flex;
+            }
+            
+
+        }
+        /* Accessibility: focus styles */
+        .hamburger-menu:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 3px;
+        }
+        .nav-menu li a:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 3px;
+            border-radius: 3px;
+        }
+        /* Basic content for demonstration */
+        main {
+            padding: 2rem;
+            max-width: 960px;
+            margin: 2rem auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: var(--primary-color);
+        }
+        .main-footer {
+            background-color: var(--primary-color); /* Используем цвет хедера для согласованности */
+            color: var(--text-color);
+            padding: 3rem 2rem;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Тень сверху */
+            font-size: 0.9rem;
+        }
+.footer-container {
+    max-width: 1200px; /* Ограничиваем ширину содержимого футера */
+    margin: 0 auto; /* Центрируем */
+    display: flex;
+    flex-wrap: wrap; /* Позволяет секциям переноситься на новую строку на маленьких экранах */
+    justify-content: space-between;
+    gap: 2rem; /* Отступ между колонками */
+}
+.footer-section {
+    flex: 1; /* Каждая секция занимает равное пространство */
+    min-width: 250px; /* Минимальная ширина для каждой секции, чтобы не стать слишком узкой */
+}
+.footer-section h3 {
+    color: var(--accent-color); /* Акцентный цвет для заголовков */
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+.footer-section p,
+.footer-section ul {
+    margin: 0;
+    padding: 0;
+    list-style: none; /* Убираем маркеры списка */
+}
+.footer-section ul li {
+    margin-bottom: 0.5rem;
+}
+.footer-section a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+.footer-section a:hover,
+.footer-section a:focus {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+.footer-bottom {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Разделитель */
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+.footer-bottom a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+.footer-bottom a:hover,
+.footer-bottom a:focus {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .main-footer {
+        padding: 2rem 1rem;
+    }
+    .footer-container {
+        flex-direction: column; /* Колонки выстраиваются вертикально */
+        gap: 2rem;
+    }
+    .footer-section {
+        min-width: unset; /* Отменяем минимальную ширину */
+        text-align: center; /* Центрируем текст */
+    }
+    .footer-section ul {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Центрируем ссылки */
+    }
+    .footer-bottom {
+        margin-top: 2rem;
+        padding-top: 1rem;
+    }
+}
+
+
+
+

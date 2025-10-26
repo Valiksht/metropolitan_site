@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ clergy.name }} - {{ title }} - Кстовская митрополия{% endblock %}
+{% block extra_css %}
+    {{ block.super }}
+    /* Стили для детальной страницы */
+    .detail-page-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .detail-page-container .back-link {
+        display: inline-block;
+        margin-bottom: 2rem;
+        padding: 0.8rem 1.5rem;
+        background-color: #f0f0f0;
+        color: var(--primary-color);
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+    .detail-page-container .back-link:hover {
+        background-color: #e0e0e0;
+    }
+    .detail-image {
+        width: 100%;
+        height: auto;
+        max-height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        display: block;
+    }
+    .detail-title {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .detail-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+    @media (max-width: 768px) {
+        .detail-page-container {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        .detail-title {
+            font-size: 2.2rem;
+        }
+    }
+        .clergy-list-detail {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    .clergy-list-detail li {
+        background-color: #f9f9f9;
+        padding: 1rem;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    .clergy-list-detail li a {
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+    .clergy-list-detail li a:hover {
+        color: var(--accent-color);
+    }
+{% endblock %}
+{% block content %}
+<div class="detail-page-container">
+    <a href="{% url 'temple:clergy' %}" class="back-link">&larr; Ко всему духовенству</a>
+    {% if clergy.image %}
+        <img src="{{ clergy.image.url }}" alt="{{ clergy.name }}" class="detail-image">
+    {% else %}
+        <img src="{{ MEDIA_URL }}base_images/base_clergy.jpg" alt="Изображение по умолчанию" class="detail-image">
+    {% endif %}
+    <h1 class="detail-title">{{ clergy.name }}</h1>
+    <div class="detail-description">
+        {{ clergy.description|linebreaks }}
+    </div>
+        {% if temple_list %}
+    <div class="clergy-section">
+        <h2>Места служения:</h2>
+        <ul class="clergy-list-detail">
+            {% for temple in temple_list %}
+                <li><a href="{% url 'temple:temple_detail' temple.pk %}">{{ temple.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

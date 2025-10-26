@@ -1,0 +1,349 @@
+<!-- temple/templates/temple/contact_list.html -->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Кстовская митрополия{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        /* ========================================================================= */
+        /* === ОБЩИЕ СТИЛИ СТРАНИЦЫ СПИСКА КОНТАКТОВ                              === */
+        /* ========================================================================= */
+        body {
+            background-color: var(--background-color, #f4f4f4); /* Фоновый цвет для страницы */
+        }
+
+        .contact-list-page-container {
+            /* max-width: 1200px; <--- УДАЛЯЕМ: теперь каждая карточка будет регулировать свою ширину */
+            width: 100%; /* Контейнер занимает всю доступную ширину */
+            margin: 2rem auto;
+            padding: 0; /* padding будет у каждой карточки */
+            box-sizing: border-box;
+        }
+
+        .contact-list-page-container h1 {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: var(--primary-color);
+            font-size: 3rem; /* Чуть увеличим заголовок */
+        }
+
+        .contact-cards-horizontal {
+            /* display: flex; <--- УДАЛЯЕМ: карточки будут идти одна за другой */
+            /* flex-wrap: wrap; <--- УДАЛЯЕМ */
+            /* gap: 1.5rem; <--- УДАЛЯЕМ: отступы будут в margin каждой карточки */
+            /* justify-content: center; <--- УДАЛЯЕМ */
+            display: block; /* Карточки будут располагаться одна под другой */
+        }
+
+        /* ========================================================================= */
+        /* === Стили для каждой карточки контакта (contact-card-horizontal)      === */
+        /* ========================================================================= */
+        .contact-card-horizontal {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem 5%; /* <--- ИЗМЕНЕНО: Более крупные отступы, горизонтальный в % */
+            margin: 1.5rem auto; /* <--- ИЗМЕНЕНО: Отступы между карточками и центрирование */
+            width: 90%; /* <--- ИЗМЕНЕНО: 90% ширины от родителя, чтобы был отступ от краев страницы */
+            max-width: 1200px; /* <--- Опционально: максимальная ширина карточки на очень больших экранах */
+            box-sizing: border-box; /* Важно, чтобы padding не увеличивал общую ширину */
+            
+            display: flex; /* Используем flexbox для внутреннего содержимого */
+            flex-direction: column;
+            justify-content: space-between;
+            
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .contact-card-horizontal:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .contact-card-horizontal h2 {
+            font-size: 2.2rem; /* Чуть увеличим заголовок карточки */
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1.5rem; /* Увеличим отступ */
+            text-align: center;
+        }
+
+        .contact-card-horizontal p {
+            font-size: 1.1rem; /* Чуть увеличим шрифт */
+            color: var(--secondary-color);
+            margin-bottom: 0.8rem; /* Увеличим отступ */
+            line-height: 1.6; /* Улучшим читаемость */
+        }
+
+        .contact-card-horizontal .contact-info-label {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+
+        .contact-card-horizontal .contact-details {
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        /* ========================================================================= */
+        /* === Стили для кнопок копирования                                      === */
+        /* ========================================================================= */
+        .copy-button-wrapper { /* Новая обертка для кнопки и текста */
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem; /* Отступ между строками, содержащими кнопки */
+        }
+        .copy-button-wrapper p { /* Сброс margin-bottom для P внутри wrapper */
+            margin-bottom: 0;
+        }
+
+        .copy-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1rem; /* Чуть уменьшим padding для компактности */
+            background-color: var(--accent-color);
+            color: var(--text-color); /* Или white, если text-color не подходит */
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem; /* Чуть уменьшим шрифт кнопки */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 15px; /* Отступ от текста */
+            flex-shrink: 0; /* Не сжиматься */
+        }
+
+        .copy-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .copy-button .icon {
+            margin-right: 0.5rem;
+        }
+
+        .no-contacts {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        /* ========================================================================= */
+        /* === Стили для встроенной карты                                        === */
+        /* ========================================================================= */
+        .map-section {
+            margin-top: 2rem; /* Отступ от предыдущего блока в карточке */
+            padding-top: 2rem;
+            border-top: 1px dashed #e0e0e0;
+            text-align: center;
+        }
+
+        .map-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .map-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Соотношение сторон 16:9 */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #f0f0f0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .map-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 8px;
+        }
+
+        /* ========================================================================= */
+        /* === АДАПТИВНОСТЬ                                                      === */
+        /* ========================================================================= */
+        @media (max-width: 768px) {
+            .contact-list-page-container h1 {
+                font-size: 2.5rem;
+            }
+            .contact-card-horizontal {
+                padding: 1.5rem 5%; /* Меньший padding на мобильных */
+                width: 95%; /* Чуть больше ширины на мобильных */
+                margin: 1rem auto;
+            }
+            .contact-card-horizontal h2 {
+                font-size: 2rem;
+            }
+            .contact-card-horizontal p {
+                font-size: 1rem;
+                margin-bottom: 0.6rem;
+            }
+            .copy-button {
+                margin-left: 10px; /* Отступ от текста на мобильных */
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .map-section h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-card-horizontal {
+                padding: 1rem 3%; /* Ещё меньше padding на очень маленьких экранах */
+                width: 98%;
+            }
+            .copy-button-wrapper {
+                flex-direction: column; /* Кнопки под текстом на очень маленьких экранах */
+                align-items: flex-start;
+            }
+            .copy-button-wrapper p {
+                margin-bottom: 0.5rem;
+            }
+            .copy-button {
+                margin-left: 0;
+                width: 100%; /* Кнопка во всю ширину */
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="contact-list-page-container">
+
+    <h1>{{ title }}</h1>
+
+    <div class="contact-cards-horizontal">
+
+    {% if contact_list %}
+
+        {% for contact in contact_list %}
+
+            <div class="contact-card-horizontal">
+
+                <h2>{{ contact.name }}</h2>
+
+                <div class="contact-details">
+
+                    {% if contact.phone %}
+                        <div class="copy-button-wrapper">
+                            <p><span class="contact-info-label">Телефон:</span> {{ contact.phone }}</p>
+                            <button class="copy-button" data-value="{{ contact.phone }}" aria-label="Скопировать номер телефона {{ contact.name }}">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                </svg>
+                                Копировать
+                            </button>
+                        </div>
+                    {% endif %}
+
+                    {% if contact.email %}
+                        <div class="copy-button-wrapper">
+                            <p><span class="contact-info-label">Email:</span> {{ contact.email }}</p>
+                            <button class="copy-button" data-value="{{ contact.email }}" aria-label="Скопировать адрес электронной почты {{ contact.name }}">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                </svg>
+                                Копировать
+                            </button>
+                        </div>
+                    {% endif %}
+
+                    {% if contact.message %}
+                        <p><span class="contact-info-label">Описание:</span> {{ contact.message|linebreaksbr }}</p>
+                    {% endif %}
+
+                </div>
+
+                {% if contact.location %}
+                    <section class="map-section">
+                        <h2>Наше расположение на карте</h2>
+                        <div class="map-wrapper">
+                            {{ contact.location|safe }} {# <--- ВОТ ЗДЕСЬ ИСПОЛЬЗУЕТСЯ ФИЛЬТР |safe #}
+                        </div>
+                    </section>
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+        <p class="no-contacts">Информация о контактах пока отсутствует.</p>
+    {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock content %} 
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        document.querySelectorAll('.copy-button').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                const valueToCopy = event.currentTarget.dataset.value;
+                if (!valueToCopy) {
+                    console.warn('Кнопка копирования не имеет атрибута data-value.');
+                    return;
+                }
+                let copiedSuccessfully = false;
+                // Попытка использовать Clipboard API (предпочтительный способ)
+                if (navigator.clipboard && window.isSecureContext) { // Проверяем поддержку и безопасный контекст
+                    try {
+                        await navigator.clipboard.writeText(valueToCopy);
+                        copiedSuccessfully = true;
+                    } catch (err) {
+                        console.error('Ошибка при копировании через Clipboard API: ', err);
+                    }
+                }
+                // Запасной вариант для HTTP или старых браузеров
+                if (!copiedSuccessfully) {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = valueToCopy;
+                        textarea.style.position = 'fixed'; // Чтобы не влиял на разметку
+                        textarea.style.opacity = '0'; // Скрываем
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select(); // Выделяем текст
+                        copiedSuccessfully = document.execCommand('copy'); // Копируем
+                        document.body.removeChild(textarea); // Удаляем временный элемент
+                        if (!copiedSuccessfully) {
+                            console.error('Ошибка при копировании через document.execCommand("copy")');
+                        }
+                    } catch (err) {
+                        console.error('Ошибка при копировании через запасной вариант: ', err);
+                    }
+                }
+                // Обратная связь для пользователя
+                if (copiedSuccessfully) {
+                    const originalText = event.currentTarget.textContent;
+                    event.currentTarget.textContent = 'Скопировано!';
+                    event.currentTarget.style.backgroundColor = '#28a745'; // Зеленый цвет успеха
+                    setTimeout(() => {
+                        event.currentTarget.textContent = originalText;
+                        event.currentTarget.style.backgroundColor = ''; // Возвращаем исходный цвет
+                    }, 1500);
+                } else {
+                    // Если оба способа не сработали
+                    alert('Не удалось скопировать автоматически. Пожалуйста, скопируйте вручную: ' + valueToCopy);
+                }
+            });
+        });
+    </script>
+{% endblock %}

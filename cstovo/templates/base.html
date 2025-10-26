@@ -1,0 +1,20 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+        {% include "includes/head.html" %}
+        {% block extra_css %}{% endblock %}
+      </style>
+  </head>
+  <body>
+    {% include "includes/header.html" %}
+    {% block main_out %}{% endblock %}
+    <main>
+      {% block content %}Контента пока нет :({% endblock %}
+    </main>
+    {% include "includes/footer.html" %}
+    {% block extra_js %}
+    {% include "includes/java_menu.html" %}
+    {% endblock %}
+  </body>
+</html>

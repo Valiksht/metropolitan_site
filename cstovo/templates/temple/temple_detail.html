@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ temple.name }} - Кстовская митрополия{% endblock %} {# Убрал дублирование {{ title }} #}
+
+{% block extra_css %}
+    <style>
+        /* ========================================================================= */
+        /* === ОБЩИЕ СТИЛИ ДЕТАЛЬНОЙ СТРАНИЦЫ (detail-page-container)            === */
+        /* === Адаптировано из ваших входных данных                                === */
+        /* ========================================================================= */
+        .detail-page-container {
+            max-width: 960px; /* Увеличил максимальную ширину для лучшего размещения 3 карточек */
+            margin: 2rem auto;
+            padding: 2.5rem; /* Немного увеличил padding */
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-page-container .back-link {
+            display: inline-block;
+            margin-bottom: 2.5rem; /* Увеличил отступ */
+            padding: 0.8rem 1.5rem;
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .detail-page-container .back-link:hover {
+            background-color: #e0e0e0;
+        }
+
+        .detail-image-wrapper { /* Обёртка для основного изображения храма */
+            max-width: 100%;
+            height: 100%; /* Фиксированная высота для демонстрации */
+            margin: 0 auto 2.5rem auto;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-image { /* Изображение храма */
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Можно изменить на 'contain' */
+            display: block;
+        }
+
+        .detail-title {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--secondary-color); /* Используем переменную */
+            margin-bottom: 2rem;
+            text-align: justify;
+        }
+
+        /* ========================================================================= */
+        /* === Стили для секции священнослужителей                               === */
+        /* ========================================================================= */
+        .temple-clergy-section { /* Переименован для ясности */
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px dashed #e0e0e0;
+        }
+
+        .temple-clergy-section h2 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .clergy-cards-grid { /* Контейнер для сетки карточек */
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            max-width: 960px; /* Соответствует detail-page-container */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Максимум 3 в ряд */
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .clergy-card-link { /* Ссылка, которая оборачивает всю карточку */
+            text-decoration: none;
+            color: inherit;
+            display: block; /* Важно, чтобы ссылка занимала всю карточку */
+            height: 100%; /* Чтобы все карточки были одинаковой высоты в сетке */
+            cursor: pointer;
+        }
+
+        .clergy-card-item { /* Элемент карточки священнослужителя */
+            background-color: #f8f8f8;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%; /* Занимает всю высоту ссылки */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .clergy-card-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .clergy-card-image-wrapper {
+            width: 200px;
+            height: 200px;
+            overflow: hidden;
+            margin: 0 auto 0.8rem auto;
+            flex-shrink: 0;
+        }
+
+        .clergy-card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .clergy-card-name {
+            font-size: 1.15rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            display: block; /* Чтобы должность была под именем */
+        }
+
+        .clergy-card-position {
+            font-size: 0.95rem;
+            color: var(--secondary-color);
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            flex-grow: 1;
+        }
+
+        /* ========================================================================= */
+        /* === Адаптивность                                                      === */
+        /* ========================================================================= */
+        @media (max-width: 768px) {
+            .detail-page-container {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+            .detail-title {
+                font-size: 2.5rem;
+            }
+            .detail-image-wrapper {
+                height: 250px;
+                margin-bottom: 2rem;
+            }
+            .detail-description {
+                font-size: 1rem;
+            }
+            .temple-clergy-section h2 {
+                font-size: 2rem;
+            }
+            .clergy-cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* На мобильных 2-3 карточки, поменьше */
+                gap: 1rem;
+            }
+            .clergy-card-item {
+                padding: 0.8rem;
+            }
+            .clergy-card-image-wrapper {
+                width: 80px;
+                height: 80px;
+            }
+            .clergy-card-name {
+                font-size: 1.05rem;
+            }
+            .clergy-card-position {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+             .clergy-cards-grid {
+                grid-template-columns: 1fr; /* На очень маленьких экранах - 1 карточка в ряд */
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="detail-page-container">
+
+    <a href="{% url 'temple:temple' %}" class="back-link">&larr; Ко всем храмам</a> {# Исправлен URL на temple_list #}
+
+    {% if temple.image %}
+        <div class="detail-image-wrapper">
+            <img src="{{ temple.image.url }}" alt="{{ temple.name }}" class="detail-image">
+        </div>
+    {% else %}
+        <div class="detail-image-wrapper">
+            {# Убедитесь, что MEDIA_URL доступен, если это изображение из папки media #}
+            <img src="{{ base_temple.image.url }}" alt="Изображение по умолчанию" class="detail-image">
+        </div>
+    {% endif %}
+
+    <h1 class="detail-title">{{ temple.name }}</h1>
+
+    <div class="detail-description">
+        {# Здесь вы можете добавить другую информацию о храме, например, расписание, адрес, телефон #}
+        {% if temple.description %}
+            <p>{{ temple.description|linebreaksbr }}</p>
+        {% endif %}
+        {% if temple.schedule %}
+            <p><strong>Расписание богослужений:</strong> {{ temple.schedule|linebreaksbr }}</p>
+        {% endif %}
+        {% if temple.location %}
+            <p><strong>Адрес:</strong> {{ temple.location }}</p>
+        {% endif %}
+        {% if temple.phone %}
+            <p><strong>Телефон:</strong> {{ temple.phone }}</p>
+        {% endif %}
+        {# Добавим тип храма, если он есть #}
+        {% if temple.type %}
+            <p><strong>Тип храма:</strong> {{ temple.type.name }}</p>
+        {% endif %}
+        {# Добавим школу, если она есть #}
+        {% if temple.shcool %}
+            <p><strong>Воскресная школа:</strong> {{ temple.shcool.stream }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %} Секция для священнослужителей {% endcomment %}
+    {% if clergy_in_temple %} {# Используем переменную из контекста #}
+        <div class="temple-clergy-section">
+            <h2>Священнослужители храма:</h2>
+            <ul class="clergy-cards-grid">
+                {% for tc_instance in clergy_in_temple %}
+                    <a href="{% url 'temple:clergy_detail' tc_instance.clergy.pk %}" class="clergy-card-link">
+                        <li class="clergy-card-item">
+                            {# Фотография священнослужителя #}
+                            {% if tc_instance.clergy.image %}
+                                <div class="clergy-card-image-wrapper">
+                                    <img src="{{ MEDIA_URL }}{{ tc_instance.clergy.image }}" alt="{{ tc_instance.clergy.name }}" class="clergy-card-image">
+                                </div>
+                            {% else %}
+                                <div class="clergy-card-image-wrapper">
+                                    <img src="{% static 'img/default_clergy.jpg' %}" alt="{{ tc_instance.clergy.name }}" class="clergy-card-image">
+                                </div>
+                            {% endif %}
+                            
+                            {# Имя священнослужителя #}
+                            <span class="clergy-card-name">{{ tc_instance.clergy.name }}</span>
+                            
+                            {# Должность священнослужителя в этом храме #}
+                            {% if tc_instance.post %}
+                                <span class="clergy-card-position">{{ tc_instance.post }}</span>
+                            {% endif %}
+                        </li>
+                    </a>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="temple-clergy-section">
+            <p style="text-align: center; color: var(--secondary-color);">В этом храме нет приписанных священнослужителей.</p>
+        </div>
+    {% endif %}
+
+</div> {# Конец detail-page-container #}
+
+{% endblock content %}

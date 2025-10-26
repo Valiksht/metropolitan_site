@@ -1,0 +1,58 @@
+[
+  {
+    "model": "temple.TempleType",
+    "pk": 1,
+    "fields": {
+      "name": "Собор"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 2,
+    "fields": {
+      "name": "Церковь"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 3,
+    "fields": {
+      "name": "Часовня"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 4,
+    "fields": {
+      "name": "Монастырь"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 5,
+    "fields": {
+      "name": "Приходской дом"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 6,
+    "fields": {
+      "name": "Крестильный храм"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 7,
+    "fields": {
+      "name": "Домовая церковь"
+    }
+  },
+  {
+    "model": "temple.TempleType",
+    "pk": 8,
+    "fields": {
+      "name": "Подворье"
+    }
+  }
+]

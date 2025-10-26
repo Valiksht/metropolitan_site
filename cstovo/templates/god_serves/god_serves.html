@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ title }} - Кстовская митрополия{% endblock %}
+{% block extra_css %}
+    {{ block.super }}
+       .godserves-list-container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .godserves-list-container h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+        .godserves-card {
+            background-color: #fefefe;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .godserves-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .godserves-card h2 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.8rem;
+        }
+        .godserves-card p {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin-bottom: 0;
+        }
+        .no-godserves {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        @media (max-width: 768px) {
+            .godserves-list-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .godserves-list-container h1 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+            .godserves-card h2 {
+                font-size: 1.5rem;
+            }
+        }
+{% endblock %}
+{% block content %}
+<div class="godserves-list-container">
+    <h1>{{ title }}</h1>
+    {% if godserves_list %}
+        {% for serves in godserves_list %}
+            <div class="godserves-card">
+                <h2>{{ serves.name }}</h2>
+                <p>{{ serves.description }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-godserves">Информация о богослужениях пока отсутствует.</p>
+    {% endif %}
+</div>
+{% endblock content %}

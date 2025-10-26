@@ -1,0 +1,27 @@
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-section footer-info">
+            <h3>Кстовская митрополия</h3>
+            <p>Православная организация на территории Кстовского района.</p>
+            <p>Сайт создан для информирования прихожан и всех интересующихся жизнью церкви.</p>
+        </div>
+        <div class="footer-section footer-links">
+            <h3>Навигация</h3>
+            <ul>
+                <li><a href="{% url 'temple:homepage' %}">Главная</a></li>
+                <li><a href="{% url 'temple:contact' %}">Контакты</a></li>
+            </ul>
+        </div>
+        <div class="footer-section footer-social">
+            <h3>Мы в соцсетях</h3>
+            <ul>
+                <li><a href="#" target="_blank" aria-label="Наша страница ВКонтакте">ВКонтакте</a></li>
+                <!-- Добавьте ссылки на другие социальные сети -->
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; {% now "Y" %} Кстовская митрополия. Все права защищены.</p>
+        <p>Разработка и поддержка: <a href="https://yourwebsite.com" target="_blank" rel="noopener noreferrer">Ваше Имя / Название Компании</a></p>
+    </div>
+</footer>
