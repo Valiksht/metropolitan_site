@@ -1,219 +1,297 @@
- <!-- index.html --> 
- {% extends "base.html" %}
- 
- {% load static %}
- {% block title %}Новости Кстовской митрополии{% endblock %}
- {% block extra_css %}
-  /* Стили для карточек новостей */
-        .news-list-page-container {
-            max-width: 960px; /* Ограничиваем общую ширину контента для читабельности */
-            margin: 2rem auto;
-            padding: 0 1.5rem; /* Добавляем горизонтальные отступы для маленьких экранов */
-        }
-        .news-list-page-container h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 3rem;
-            font-size: 2.5rem;
-        }
-        /* Контейнер для новостей - больше не flex/grid, просто обычный поток */
-        .news-cards-list {
-            display: flex; /* Сделаем его flex-контейнером для контроля над отступами */
-            flex-direction: column; /* Элементы будут располагаться вертикально */
-            gap: 2.5rem; /* Отступ между карточками новостей */
-        }
-        .news-card {
-            display: flex; /* Карточка новости - теперь flex-контейнер для содержимого */
-            flex-direction: row; /* Изображение слева, текст справа */
-            align-items: flex-start; /* Выравнивание элементов по верху */
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            padding: 1.5rem; /* Внутренние отступы для карточки */
-            width: 100%; /* Занимает всю доступную ширину родителя */
-            box-sizing: border-box; /* padding не увеличивает ширину */
-        }
-        .news-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .news-image-wrapper {
-            flex-shrink: 0; /* Изображение не будет сжиматься */
-            width: 250px; /* Фиксированная ширина для изображения */
-            height: 280px; /* Фиксированная высота */
-            margin-right: 1.5rem;
-            border-radius: 6px;
-            overflow: hidden; /* Обрезает изображение, если оно выходит за рамки */
-        }
-        .news-card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Заполняет контейнер, сохраняя пропорции */
-            display: block;
-        }
-        .news-card-content {
-            flex-grow: 1; /* Контент займет все оставшееся пространство */
-            display: flex;
-            flex-direction: column;
-        }
-        .news-card-content h2 {
-            color: var(--primary-color);
-            font-size: 1.8rem;
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
-        .news-date {
-            font-size: 0.9rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            opacity: 0.7;
+{% extends "base.html" %}
+{% load static %}
 
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .news-card-content p {
-            font-size: 1rem;
-            color: var(--secondary-color);
-            margin-bottom: 1.5rem;
-            flex-grow: 1; /* Описание может растягиваться */
-        }
-        .read-more-button {
-            display: inline-block;
-            padding: 0.6rem 1.2rem;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 5px;
-            align-self: flex-start; /* Выравнивание кнопки к левому краю внутри flex-контейнера */
-            transition: background-color var(--transition-speed) ease;
-        }
-        .read-more-button:hover {
-            background-color: var(--hover-color);
-        }
-        .no-news {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 1.2rem;
-            color: var(--secondary-color);
-        }
-        .photo-info {
-            display: inline-flex; /* Сделаем иконку и число рядом */
-            align-items: center;
-            /* background-color: var(--accent-color);  <--- УДАЛЯЕМ фон */
-            /* border-radius: 10px; <--- УДАЛЯЕМ закругленные края */
-            /* box-shadow: 0 1px 3px rgba(0,0,0,0.2); <--- УДАЛЯЕМ тень */
-            /* padding: 2px 7px; <--- УДАЛЯЕМ padding, если не нужен */
-            
-            color: #888; /* <--- ИЗМЕНЯЕМ: Серый цвет для иконки и числа */
-            font-size: 0.9rem; /* Может быть чуть больше или такой же, как дата */
-            line-height: 1;
-            font-weight: normal; /* <--- ИЗМЕНЯЕМ: Обычный вес шрифта */
-            margin-left: 8px; <--- Отступ уже задан в .news-date с gap */
-        }
-        .camera-icon {
-            width: 16px; /* <--- УВЕЛИЧИМ размер иконки, чтобы она была заметна */
-            height: 16px;
-            margin-right: 5px;
-        }
-        .count-number {
-            vertical-align: middle; /* Выравнивание по середине */
-        }
-        /* Кнопка "Ко всем новостям" по центру */
-        .all-news-button-wrapper {
-            margin-top: 3rem; /* Отступ сверху от последней новости или сообщения */
-            text-align: center; /* Центрирование строчно-блочных элементов */
-        }
-        .all-news-button {
-            display: inline-block; /* Сделать кнопкой строчно-блочной */
-            padding: 0.8rem 1.5rem;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color var(--transition-speed) ease;
-        }
-        .all-news-button:hover {
-            background-color: var(--hover-color);
-        }
-        /* ========================================================================= */
-        /* === Адаптивность                                                      === */
-        /* ========================================================================= */
-        @media (max-width: 768px) {
-            .news-list-page-container h1 {
-                font-size: 2rem;
-            }
-            .news-card {
-                flex-direction: column; /* На маленьких экранах - изображение сверху, текст снизу */
-                align-items: center;
-                padding: 1rem;
-            }
-            .news-image-wrapper {
-                width: 100%; /* Изображение на всю ширину */
-                height: 180px; /* Увеличим высоту для мобильных */
-                margin-right: 0;
-                margin-bottom: 1rem; /* Отступ под изображением */
-            }
-            .news-card-image {
-                object-fit: contain; 
-            }
-            .news-card-content {
-                text-align: center; /* Центрируем текст на мобильных */
-            }
-            .news-card-content h2 {
-                font-size: 1.5rem;
-            }
-  /* Адаптивность для очень маленьких экранов */
-  @media (max-width: 600px) {
+{% block title %}Новости Кстовской митрополии{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <style>
+    /* Контейнер страницы и шапка */
     .news-list-page {
-        padding: 0 1rem;
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
     }
-    .news-cards-container {
-        grid-template-columns: 1fr; /* Одна колонка на очень маленьких экранах */
+    .news-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
-  }
- {% endblock %}
- {% block content %}
-  <div class="news-list-page">
+    .news-header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      color: var(--primary-color);
+    }
+
+    /* Кнопка-переключатель вида */
+    .view-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      padding: .5rem .75rem;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      color: inherit;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      transition: background .2s, box-shadow .2s, transform .1s;
+    }
+    .view-toggle-btn:hover {
+      background: #f7f7f7;
+      box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    }
+    .view-toggle-btn:active { transform: translateY(1px); }
+    .view-toggle-btn svg { width: 20px; height: 20px; display: block; }
+
+    /* Список карточек как контейнер */
+    .news-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Базовая карточка (вид Список) */
+    .news-card-link {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform .2s, box-shadow .2s;
+      padding: 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .news-card-link:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .news-image-wrapper {
+      flex-shrink: 0;
+      width: 250px;
+      height: 280px;
+      margin-right: 1.5rem;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    .news-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* текущая логика для вида "Список" */
+      display: block;
+    }
+
+    .news-card-content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .news-card-content h2 {
+      color: var(--title-color);
+      font-size: 1.6rem;
+      margin: 0 0 .5rem 0;
+      line-height: 1.3;
+    }
+    .news-date {
+      font-size: .95rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+      opacity: .75;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .photo-info { display: inline-flex; align-items: center; gap: 6px; color: #888; font-size: .9rem; }
+    .camera-icon { width: 18px; height: 18px; color: var(--secondary-color); }
+    .count-number { font-size: 1.1rem; color: var(--secondary-color); }
+
+    .news-card-content p {
+      font-size: 1.1rem;
+      color: var(--secondary-color);
+      margin: 0;
+    }
+
+    .no-news {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: var(--secondary-color);
+    }
+
+    /* —— РЕЖИМ КВАДРАТНЫХ КАРТОЧЕК ——————————————————————————————— */
+    .view-grid .news-cards-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .view-grid .news-card-link {
+      position: relative;
+      padding: 0;
+      aspect-ratio: 1 / 1; /* квадрат */
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .view-grid .news-image-wrapper {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .view-grid .news-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* картинка заполняет квадрат, обрезка по бокам при необходимости */
+      display: block;
+    }
+
+    .view-grid .news-card-content {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: .75rem 1rem;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.7) 90%);
+      color: #fff;
+    }
+    .view-grid .news-card-content h2 {
+      margin: 0;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .view-grid .news-card-content p,
+    .view-grid .news-date,
+    .view-grid .photo-info { display: none !important; }
+
+    /* Иконки переключения: показываем текущий режим */
+    .icon-list, .icon-grid { display: none; }
+    .view-list .icon-list { display: inline-block; }
+    .view-grid .icon-grid { display: inline-block; }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .news-header h1 { font-size: 1.8rem; }
+      .news-card-link { flex-direction: column; align-items: center; padding: 1rem; }
+      .news-image-wrapper { width: 100%; height: 200px; margin-right: 0; margin-bottom: 1rem; }
+      .news-card-image { object-fit: contain; }
+      .news-card-content h2 { font-size: 1.3rem; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="news-list-page view-list" id="newsPageRoot">
+    <div class="news-header">
       <h1>Последние новости</h1>
-      <div class="news-cards-container">
-          {% for news_item in news_list %}
-          <div class="news-card">
-              {% if news_item.image %}
-              <div class="news-image-wrapper">
-                  <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-card-image">
-              </div>
+      <button id="viewToggleBtn" class="view-toggle-btn" type="button" aria-label="Переключить вид" aria-pressed="false" title="Переключить вид">
+        <!-- Иконка списка (3 полоски) -->
+        <svg class="icon-list" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+        </svg>
+        <!-- Иконка сетки (2x2 квадрата) -->
+        <svg class="icon-grid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="news-cards-list">
+      {% for news_item in news_list %}
+        <a href="{% url 'temple:news_detail' news_item.pk %}" class="news-card-link">
+          {% if news_item.small_image %}
+            <div class="news-image-wrapper">
+              <img src="{{ news_item.small_image.url }}" alt="{{ news_item.title }}" class="news-card-image">
+            </div>
+          {% endif %}
+
+          <div class="news-card-content">
+            <h2>{{ news_item.title }}</h2>
+
+            <p class="news-date">
+              {{ news_item.date|date:"d M Y" }}
+              {% if news_item.num_images > 0 %}
+                <span class="photo-info" title="Количество фотографий">
+                  <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M53.25,61H10.75A7.76,7.76,0,0,1,3,53.25V26.75A7.76,7.76,0,0,1,10.75,19h42.5A7.76,7.76,0,0,1,61,26.75v26.5A7.76,7.76,0,0,1,53.25,61ZM10.75,21A5.76,5.76,0,0,0,5,26.75v26.5A5.76,5.76,0,0,0,10.75,59h42.5A5.76,5.76,0,0,0,59,53.25V26.75A5.76,5.76,0,0,0,53.25,21Z"/>
+                    <path d="M42,21H22a1,1,0,0,1-1-1V17.31A6.32,6.32,0,0,1,27.31,11h9.38A6.32,6.32,0,0,1,43,17.31V20A1,1,0,0,1,42,21ZM23,19H41V17.31A4.31,4.31,0,0,0,36.69,13H27.31A4.31,4.31,0,0,0,23,17.31Z"/>
+                    <path d="M32,53A11,11,0,1,1,43,42,11,11,0,0,1,32,53Zm0-20a9,9,0,1,0,9,9A9,9,0,0,0,32,33Z"/>
+                    <path d="M32,57A15,15,0,1,1,47,42,15,15,0,0,1,32,57Zm0-28A13,13,0,1,0,45,42,13,13,0,0,0,32,29Z"/>
+                    <path d="M16,34H8a1,1,0,0,1-1-1V25a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v8A1,1,0,0,1,16,34ZM9,32h6V26H9Z"/>
+                    <path d="M56,29H48a1,1,0,0,1-1-1V24a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v4A1,1,0,0,1,56,29Zm-7-2h6V25H49Z"/>
+                    <path d="M38,21H26a1,1,0,0,1-1-1V16a1,1,0,0,1,1-1H38a1,1,0,0,1,1,1v4A1,1,0,0,1,38,21ZM27,19H37V17H27Z"/>
+                  </svg>
+                  <span class="count-number">{{ news_item.num_images }}</span>
+                </span>
               {% endif %}
-              <div class="news-card-content">
-                <h2>{{ news_item.title }}</h2>
-                <p class="news-date">
-                    {{ news_item.date|date:"d M Y" }}
-                    {% if news_item.num_images > 0 %}
-                        <span class="photo-info" title="Количество фотографий">
-                            <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                                <path d="M53.25,61H10.75A7.76,7.76,0,0,1,3,53.25V26.75A7.76,7.76,0,0,1,10.75,19h42.5A7.76,7.76,0,0,1,61,26.75v26.5A7.76,7.76,0,0,1,53.25,61ZM10.75,21A5.76,5.76,0,0,0,5,26.75v26.5A5.76,5.76,0,0,0,10.75,59h42.5A5.76,5.76,0,0,0,59,53.25V26.75A5.76,5.76,0,0,0,53.25,21Z"/>
-                                <path d="M42,21H22a1,1,0,0,1-1-1V17.31A6.32,6.32,0,0,1,27.31,11h9.38A6.32,6.32,0,0,1,43,17.31V20A1,1,0,0,1,42,21ZM23,19H41V17.31A4.31,4.31,0,0,0,36.69,13H27.31A4.31,4.31,0,0,0,23,17.31Z"/>
-                                <path d="M32,53A11,11,0,1,1,43,42,11,11,0,0,1,32,53Zm0-20a9,9,0,1,0,9,9A9,9,0,0,0,32,33Z"/>
-                                <path d="M32,57A15,15,0,1,1,47,42,15,15,0,0,1,32,57Zm0-28A13,13,0,1,0,45,42,13,13,0,0,0,32,29Z"/>
-                                <path d="M16,34H8a1,1,0,0,1-1-1V25a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v8A1,1,0,0,1,16,34ZM9,32h6V26H9Z"/>
-                                <path d="M56,29H48a1,1,0,0,1-1-1V24a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v4A1,1,0,0,1,56,29Zm-7-2h6V25H49Z"/>
-                                <path d="M38,21H26a1,1,0,0,1-1-1V16a1,1,0,0,1,1-1H38a1,1,0,0,1,1,1v4A1,1,0,0,1,38,21ZM27,19H37V17H27Z"/>
-                            </svg>
-                            <span class="count-number">{{ news_item.num_images }}</span>
-                        </span>
-                    {% endif %}
-                </p>
-                <p>{{ news_item.description|truncatechars:150 }}</p> {# Обрезаем описание до 150 символов #}
-                <a href="{% url 'temple:news_detail' news_item.pk %}" class="read-more-button">Читать далее</a> 
-              </div>
+            </p>
+
+            <p>{{ news_item.description|truncatechars:150 }}</p>
           </div>
-          {% empty %}
-          <p>На данный момент новостей нет.</p>
-          {% endfor %}
+        </a>
+      {% empty %}
+        <p class="no-news">На данный момент новостей нет.</p>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+      <div class="pagination-container">
+        <span class="step-links">
+          {% if page_obj.has_previous %}
+            <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">&laquo; первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">предыдущая</a>
+          {% endif %}
+          <span class="current-page">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">следующая</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">последняя &raquo;</a>
+          {% endif %}
+        </span>
       </div>
+    {% endif %}
   </div>
- {% endblock %}
- 
+
+  <script>
+    (function() {
+      const root = document.getElementById('newsPageRoot');
+      const btn  = document.getElementById('viewToggleBtn');
+      const STORAGE_KEY = 'newsViewMode'; // 'list' | 'grid'
+
+      function applyMode(mode) {
+        root.classList.toggle('view-grid', mode === 'grid');
+        root.classList.toggle('view-list', mode !== 'grid');
+        btn.setAttribute('aria-pressed', mode === 'grid' ? 'true' : 'false');
+        btn.title = mode === 'grid' ? 'Показ: квадратики' : 'Показ: список';
+      }
+
+      // Инициализация из localStorage
+      const saved = localStorage.getItem(STORAGE_KEY);
+      applyMode(saved === 'grid' ? 'grid' : 'list');
+
+      // Переключение по клику
+      btn.addEventListener('click', function() {
+        const toGrid = !root.classList.contains('view-grid');
+        const mode = toGrid ? 'grid' : 'list';
+        localStorage.setItem(STORAGE_KEY, mode);
+        applyMode(mode);
+      });
+    })();
+  </script>
+{% endblock %}

@@ -9,6 +9,7 @@ from .models import (
     News,
     NewsImage,
     Temple,
+    Status,
     Clergy,
     Contact,
     Deal,
@@ -42,9 +43,12 @@ class NewsListView(ListView):
     model = News
     template_name = 'news/news_list.html'
     context_object_name = 'news_list'
+    # Добавить пагинацию.
+    paginate_by = 15
 
     def get_queryset(self):
-        queryset = super().get_queryset().annotate(
+        queryset = super().get_queryset().order_by('-date')
+        queryset = queryset.annotate(
             num_images=Count('images') # Добавляем поле num_images, которое подсчитывает связанные NewsImage
         )
         return queryset
@@ -56,7 +60,8 @@ class NewsDetailView(DetailView):
     context_object_name = 'news'
 
     def get_queryset(self):
-        queryset = super().get_queryset().prefetch_related(
+        queryset = super().get_queryset().order_by('-date')
+        queryset = queryset.prefetch_related(
             Prefetch(
                 'images',
                 queryset=NewsImage.objects.all().order_by('pk'),
@@ -81,6 +86,13 @@ class TempleListView(ListView):
     template_name = 'temple/temple_list.html'
     context_object_name = 'temple_list'
 
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('status').order_by('order', 'name')
+        status_id = self.request.GET.get('status', 'all')
+        if status_id != 'all':
+            qs = qs.filter(status_id=status_id)
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Храмы'
@@ -91,6 +103,13 @@ class TempleListView(ListView):
             # Обработка других возможных исключений
             print(f"Произошла ошибка при получении базового изображения: {e}")
             context['base_temple'] = None
+        try:
+            context['all_statuses'] = Status.objects.all().order_by('order') # Переименовал status_list в all_statuses
+        except Exception as e:
+            print(f"Произошла ошибка при получении статусов: {e}")
+            context['all_statuses'] = [] # Передаем пустой список, если ошибка
+        # Передаем имя выбранного статуса в контекст, чтобы пометить активную радиокнопку
+        context['selected_status_name'] = self.request.GET.get('status', 'all')
         return context
 
 
@@ -108,7 +127,7 @@ class TempleDetailView(DetailView):
                     'temple_clergy',
                     queryset=TempleClergy.objects.select_related(
                         'clergy'
-                    ).order_by('order', 'clergy__name'),
+                    ).order_by('order', 'clergy__last_name'),
                     to_attr='clergy_in_temple',
                 )
             )
@@ -134,6 +153,13 @@ class ClergyListView(ListView):
     template_name = 'clergy/clergy_list.html'
     context_object_name = 'clergy_list'
 
+    # def get_queryset(self):
+    #     return (
+    #         Clergy.objects
+    #         .only('id', 'first_name', 'last_name', 'post', 'order', 'small_image')  # добавьте то, что реально нужно в списке
+    #         .order_by('order', 'id')
+    #     )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Духовенство'
@@ -151,8 +177,10 @@ class ClergyDetailView(DetailView):
             .get_queryset()
             .prefetch_related(
                 Prefetch(
-                    'temple',
-                    queryset=Temple.objects.all(),
+                    'clergy_temple',
+                    queryset=TempleClergy.objects.select_related(
+                        'temple'
+                    ).order_by('order',),
                     to_attr='temple_list',
                 )
             )
@@ -161,8 +189,13 @@ class ClergyDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         clergy_object = context[self.context_object_name]
-        context['title'] = clergy_object.name
+        context['title'] = clergy_object.last_name
         context['temple_list'] = clergy_object.temple_list
+        context['post_list'] = [
+            line.strip() 
+            for line in clergy_object.post.split('\n') 
+            if line.strip()
+        ]
         return context
 
 

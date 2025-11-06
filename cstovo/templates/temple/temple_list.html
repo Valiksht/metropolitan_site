@@ -3,6 +3,67 @@
 {% block title %}{{ title }} - Кстовская митрополия{% endblock %}
 {% block extra_css %}
     {{ block.super }}
+            /* ========================================================================= */
+        /* === Стили для фильтров по статусу (радиокнопки)                       === */
+        /* ========================================================================= */
+.status-filters-container {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* Вкладки */
+.filter-tabs {
+  display: flex;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 0 1px rgba(24, 94, 224, 0.15), 0 6px 12px rgba(24, 94, 224, 0.15);
+  padding: 0.5rem;
+  border-radius: 30px;
+  flex-wrap: wrap;            /* Важно: без переноса  nowrap; */
+  align-items: center;
+  max-width: 100%;
+  gap: 0;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+}
+/* Скрываем только эти радио-инпуты, не глобально */
+.filter-tabs input[type="radio"] {
+  display: none;
+}
+/* Кнопки (label) */
+.filter-tabs label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  padding: 0 15px;             /* Динамичная ширина */
+  font-size: 1.4rem;
+  font-weight: 400;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: color 0.15s;
+  position: relative;
+  z-index: 2;                  /* Поверх ползунка */
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.filter-tabs input[type="radio"]:checked + label {
+  color: #185ee0;
+}
+/* Ползунок */
+.glider {
+  position: absolute;
+  top: 0; /* Вернем top:0 и left:0 в CSS */
+  left: 0;
+
+  height: 54px;
+  width: 150px;                /* Стартовое значение — JS перепишет */
+  background-color: #e6eef9;
+  border-radius: 99px;
+  transition: transform 0.25s ease-out, width 0.25s ease-out, top 0.25s ease-out;
+  z-index: 1;                  /* Под label */
+}
     /* Стили для карточек списка (можно переиспользовать или адаптировать из clergy_list.html) */
     .list-page-container {
         max-width: 1200px;
@@ -11,15 +72,20 @@
     }
     .list-page-container h1 {
         text-align: center;
-        margin-bottom: 2.5rem;
+        margin-bottom: 1rem;
         color: var(--primary-color);
         font-size: 2.5rem;
     }
     .cards-grid-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 2rem;
     }
+    @media (max-width: 800px) {
+  .cards-grid-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
     .card-item {
         background-color: #fff;
         border-radius: 8px;
@@ -60,7 +126,7 @@
         color: var(--primary-color);
     }
     .card-content p {
-        font-size: 1rem;
+        font-size: 1.2rem;
         line-height: 1.5;
         color: var(--secondary-color);
         flex-grow: 1;
@@ -79,6 +145,11 @@
     .card-content .read-more-button:hover {
         background-color: var(--hover-color);
     }
+    @media (max-width: 100px) {
+        .glider {
+        display: none; /* Скрываем ползунок на мобильных, если он не нужен */
+    }
+    }  
     @media (max-width: 600px) {
         .cards-grid-container {
             grid-template-columns: 1fr;
@@ -91,12 +162,41 @@
 {% block content %}
 <div class="list-page-container">
     <h1>{{ title }}</h1>
+
+<div class="status-filters-container">
+  <form id="filter-form" method="GET" action="{% url 'temple:temple' %}">
+    <div class="filter-tabs">
+      <input
+        type="radio"
+        id="status-all"
+        name="status"
+        value="all"
+        {% if selected_status_name == 'all' %}checked{% endif %}
+        onchange="this.form.submit()"
+      >
+      <label for="status-all">Все храмы</label>
+      {% for status in all_statuses %}
+        <input
+          type="radio"
+          id="status-{{ status.pk }}"
+          name="status"
+          value="{{ status.pk }}"
+          {% if selected_status_name|default:'all' == status.pk|stringformat:'s' %}checked{% endif %}
+          onchange="this.form.submit()"
+        >
+        <label for="status-{{ status.pk }}">{{ status.name }}</label>
+      {% endfor %}
+      <span class="glider"></span>
+    </div>
+  </form>
+</div>
+
     <div class="cards-grid-container">
         {% for temple_item in temple_list %}
         <a href="{% url 'temple:temple_detail' temple_item.pk %}" class="card-item">
-            {% if temple_item.image %}
+            {% if temple_item.small_image %}
             <div class="card-image-wrapper">
-                <img src="{{ temple_item.image.url }}" alt="{{ temple_item.name }}">
+                <img src="{{ temple_item.small_image.url }}" alt="{{ temple_item.name }}">
             </div>
             {% else %}
             <div class="card-image-wrapper">
@@ -114,3 +214,72 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.getElementById('filter-form');
+            const radioButtons = filterForm.querySelectorAll('input[type="radio"][name="status"]');
+            const glider = filterForm.querySelector('.glider');
+            const filterTabsContainer = filterForm.querySelector('.filter-tabs');
+
+            function moveGlider(activeRadio) {
+                if (!glider) return; // Проверяем существование glider
+
+                // Проверяем, видимо ли ползунок. Если нет, то не двигаем.
+                if (window.getComputedStyle(glider).display === 'none') {
+                    return;
+                }
+
+                const activeLabel = activeRadio.nextElementSibling;
+                if (activeLabel) {
+                    const labelRect = activeLabel.getBoundingClientRect();
+                    const containerRect = filterTabsContainer.getBoundingClientRect();
+
+                    // Рассчитываем смещения относительно контейнера filterTabsContainer
+                    // Учитываем scrollLeft и scrollTop контейнера, если он сам прокручивается
+                    const offsetX = labelRect.left - containerRect.left + filterTabsContainer.scrollLeft;
+                    const offsetY = labelRect.top - containerRect.top + filterTabsContainer.scrollTop;
+
+                    const width = labelRect.width;
+
+                    glider.style.width = `${width}px`;
+                    glider.style.transform = `translateX(${offsetX}px) translateY(${offsetY}px)`;
+                }
+            }
+
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    moveGlider(this);
+                    // Небольшая задержка перед отправкой формы, чтобы увидеть анимацию glider
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 100);
+                });
+            });
+
+            // Инициализация положения glider при загрузке страницы
+            const initialActiveRadio = filterForm.querySelector('input[type="radio"][name="status"]:checked');
+            if (initialActiveRadio) {
+                moveGlider(initialActiveRadio);
+            }
+
+            // Добавляем слушателя на изменение размера окна для корректировки glider
+            window.addEventListener('resize', function() {
+                const currentActiveRadio = filterForm.querySelector('input[type="radio"][name="status"]:checked');
+                if (currentActiveRadio) {
+                    moveGlider(currentActiveRadio);
+                }
+            });
+
+            // Добавляем слушатель на прокрутку контейнера .filter-tabs
+            filterTabsContainer.addEventListener('scroll', function() {
+                const currentActiveRadio = filterForm.querySelector('input[type="radio"][name="status"]:checked');
+                if (currentActiveRadio) {
+                    moveGlider(currentActiveRadio);
+                }
+            });
+        });
+    </script>
+{% endblock %}

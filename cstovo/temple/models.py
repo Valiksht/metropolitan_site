@@ -1,9 +1,20 @@
+import os
+
+from django.conf import settings
 from django.db import models
+from django.urls import reverse
+
+from .serves import compress_image
 
 
 class Deal(models.Model):
     stream = models.CharField(
         max_length=255, verbose_name='Направление деятельнсти'
+    )
+    short_stream = models.CharField(
+        max_length=255,
+        default='Деятельность',
+        verbose_name='Краткое названиенаправление деятельнсти',
     )
     image = models.ImageField(
         upload_to='deal_images',
@@ -22,15 +33,27 @@ class Deal(models.Model):
 
 
 class Clergy(models.Model):
-    name = models.CharField(max_length=255, verbose_name='ФИО')
-    post = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        verbose_name='Епархиальные послушания',
+    CLERGY_RANK = (
+        ('deacon', 'Дьякон'),
+        ('priest', 'Иерей'),
+        ('archpriest', 'Протоиерей'),
+        ('bishop', 'Епископ'),
     )
-    description = models.TextField(
-        null=True, blank=True, verbose_name='Места служения'
+    CLERGY_RANK_DICT = dict(CLERGY_RANK)
+    runk = models.CharField(
+        max_length=255,
+        choices=CLERGY_RANK,
+        default='deacon',
+        verbose_name='Сан',
+    )
+    first_name = models.CharField(
+        max_length=255, default='Имя', verbose_name='Имя'
+    )
+    last_name = models.CharField(
+        max_length=255, default='Фамилия', verbose_name='Фамилия'
+    )
+    post = models.TextField(
+        null=True, blank=True, verbose_name='Епархиальные послушания'
     )
     image = models.ImageField(
         upload_to='clergy_images',
@@ -38,19 +61,66 @@ class Clergy(models.Model):
         blank=True,
         verbose_name='Изображение',
     )
-    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+    small_image = models.ImageField(
+        upload_to='clergy_samll_images',
+        null=True,
+        blank=True,
+        verbose_name='Маленькое изображение',
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Порядок',
+    )
 
     class Meta:
         verbose_name = 'Духовенство'
         verbose_name_plural = 'Духовенство'
 
+    @property
+    def rank_display(self):
+        return self.CLERGY_RANK_DICT.get(self.runk, self.runk)
+
     def __str__(self):
-        return self.name
+        return f'{self.rank_display} {self.first_name} {self.last_name}'
 
     def get_absolute_url(self):
-        from django.urls import reverse
-
         return reverse('temple:duhovenstvo_detail', args=[str(self.id)])
+
+    def save(self, *args, **kwargs):
+        image_changed = False
+        if self.pk:
+            old = type(self).objects.filter(pk=self.pk).only('image').first()
+            if old and old.image != self.image:
+                image_changed = True
+        else:
+            image_changed = bool(self.image)
+        super().save(*args, **kwargs)
+        if self.image and (image_changed or not self.small_image):
+            base_name = os.path.splitext(os.path.basename(self.image.name))[0]
+            thumb_name = f'clergy_images/small/small_{base_name}.jpg'
+            thumb_content = compress_image(self.image)
+            self.small_image.save(thumb_name, thumb_content, save=False)
+            type(self).objects.filter(pk=self.pk).update(
+                small_image=self.small_image.name
+            )
+
+
+class Status(models.Model):
+    name = models.CharField(
+        max_length=255,
+        default='Работает',
+        unique=True,
+        verbose_name='Статус храма',
+    )
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name = 'Статус храма'
+        verbose_name_plural = 'Статусы храма'
+        ordering = ('order',)
+
+    def __str__(self):
+        return self.name
 
 
 class Temple(models.Model):
@@ -62,6 +132,12 @@ class Temple(models.Model):
         blank=True,
         verbose_name='Изображение храма',
     )
+    small_image = models.ImageField(
+        upload_to='temple_images',
+        null=True,
+        blank=True,
+        verbose_name='Маленькое изображение храма',
+    )
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
     schedule = models.TextField(
         null=True, blank=True, verbose_name='Расписание'
@@ -72,13 +148,26 @@ class Temple(models.Model):
     phone = models.CharField(
         max_length=255, null=True, blank=True, verbose_name='Телефон'
     )
+    map = models.TextField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name='Код карты из конструктора карт',
+    )
     clergy = models.ManyToManyField(
         Clergy,
         through='TempleClergy',
         related_name='temple',
         verbose_name='Свещенослужители',
     )
-    # Добавить инфу кто кто он в этом храме
+    status = models.ForeignKey(
+        Status,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='temple',
+        verbose_name='Статус',
+    )
     shcool = models.ForeignKey(
         Deal,
         on_delete=models.SET_NULL,
@@ -96,16 +185,38 @@ class Temple(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        from django.urls import reverse
-
         return reverse('temple:temple_detail', args=[str(self.id)])
+
+    def save(self, *args, **kwargs):
+        image_changed = False
+        if self.pk:
+            old = type(self).objects.filter(pk=self.pk).only('image').first()
+            if old and old.image != self.image:
+                image_changed = True
+        else:
+            image_changed = bool(self.image)
+        super().save(*args, **kwargs)
+
+        if self.image and (image_changed or not self.small_image):
+            base_name = os.path.splitext(os.path.basename(self.image.name))[0]
+            thumb_name = f'clergy_images/small/small_{base_name}.jpg'
+            thumb_content = compress_image(self.image)
+            self.small_image.save(thumb_name, thumb_content, save=False)
+            type(self).objects.filter(pk=self.pk).update(
+                small_image=self.small_image.name
+            )
 
 
 class TempleClergy(models.Model):
     temple = models.ForeignKey(
         Temple, on_delete=models.CASCADE, related_name='temple_clergy'
     )
-    clergy = models.ForeignKey(Clergy, on_delete=models.CASCADE)
+    clergy = models.ForeignKey(
+        Clergy,
+        on_delete=models.CASCADE,
+        verbose_name='Священнослужитель',
+        related_name='clergy_temple',
+    )
     post = models.CharField(
         max_length=255, null=True, blank=True, verbose_name='Должность'
     )
@@ -158,7 +269,10 @@ class Contact(models.Model):
     email = models.EmailField(verbose_name='Email')
     message = models.TextField(null=True, verbose_name='Описание')
     location = models.TextField(
-        max_length=255, null=True, blank=True, verbose_name='Код карты из конструктора карт'
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name='Код карты из конструктора карт',
     )
 
     class Meta:
@@ -174,6 +288,12 @@ class News(models.Model):
     description = models.TextField(verbose_name='Описание')
     image = models.ImageField(
         upload_to='news_images',
+        null=True,
+        blank=True,
+        verbose_name='Обложка (изображение)',
+    )
+    small_image = models.ImageField(
+        upload_to='news_images/small',
         null=True,
         blank=True,
         verbose_name='Обложка (изображение)',
@@ -200,9 +320,26 @@ class News(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        from django.urls import reverse
-
         return reverse('temple:news_detail', args=[str(self.id)])
+
+    def save(self, *args, **kwargs):
+        image_changed = False
+        if self.pk:
+            old = type(self).objects.filter(pk=self.pk).only('image').first()
+            if old and old.image != self.image:
+                image_changed = True
+        else:
+            image_changed = bool(self.image)
+        super().save(*args, **kwargs)
+
+        if self.image and (image_changed or not self.small_image):
+            base_name = os.path.splitext(os.path.basename(self.image.name))[0]
+            thumb_name = f'clergy_images/small/small_{base_name}.jpg'
+            thumb_content = compress_image(self.image)
+            self.small_image.save(thumb_name, thumb_content, save=False)
+            type(self).objects.filter(pk=self.pk).update(
+                small_image=self.small_image.name
+            )
 
 
 class NewsImage(models.Model):

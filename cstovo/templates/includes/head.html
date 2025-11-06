@@ -1,311 +1,425 @@
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Адаптивный Заголовок с Навигацией</title>
-    <style>
-        :root {
-            --primary-color: #3999f3ff; /* Темно-синий, для заголовков, фона хедера/футера */
-            --secondary-color: #616161; /* Серый, для текста */
-            --accent-color: #3999f3ff; /* Оранжевый, для акцентов и кнопок */
-            --text-color: #ffffff;
-            --text-color-light: #ffffff; /* Белый, для текста на темном фоне */
-            --text-color-dark: #212121; /* Очень темный, почти черный */
-            --hover-color: #e65100; /* Темно-оранжевый при наведении */
-            --mobile-menu-bg: rgba(0, 0, 0, 0.9); /* Полупрозрачный черный для мобильного меню */
-            --transition-speed: 0.3s;
-            --header-height: 192px; /* Установим фиксированную высоту хедера */
-        }
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background-color: #fff;
-            color: var(--secondary-color);
-        }
-        a {
-    color: var(--accent-color);
-    text-decoration: none;
-    transition: color var(--transition-speed) ease;
-}
-a:hover, a:focus {
-    color: var(--hover-color);
-    text-decoration: underline;
-}
-
-/* Хедер (Header) */
-.main-header {
-    background-color: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  height: var(--header-height);
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  z-index: 1000;
-    backdrop-filter: saturate(160%) blur(6px);
-}
-/* Делаем хедер непрозрачным при прокрутке (нужен JS) */
-.main-header.scrolled {
-    background-color: var(--primary-color); /* Например, основной цвет */
-}
-.header-container {
-    max-width: 1200px; /* Ограничиваем ширину содержимого хедера */
-    width: 100%;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--text-color-light);
-    text-decoration: none;
-    flex-shrink: 0; /* Не сжимать логотип */
-    white-space: normal;
-}
-
-
-
-        header {
-            background: transparent !important;
-            color: inherit !important;
-            box-shadow: none !important;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            position: relative;
-            z-index: 1000;
-        }
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--text-color);
-            text-decoration: none;
-            white-space: normal;
-        }
-        .nav-menu {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            gap: 1.5rem;
-        }
-        .nav-menu li {
-        position: relative; /* Важно: Это делает li родителем для абсолютного позиционирования */
-        /* ... (существующие стили) ... */
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+<title>Адаптивный Заголовок с Навигацией</title>
+<style>
+    :root {
+        --primary-color: #314a68ff; /* Темно-синий, для заголовков, фона хедера/футера */
+        --secondary-color: #292929ff; /* Серый, для текста */
+        --accent-color: #7aa0c4ff; /* Оранжевый, для акцентов и кнопок */
+        --title-color: #1a1a1aff;
+        --text-color: #ffffffff;
+        --text-color-light: #ffffff; /* Белый, для текста на темном фоне */
+        --text-color-dark: #212121; /* Очень темный, почти черный */
+        --hover-color: #000000ff; /* Темно-оранжевый при наведении */
+        --mobile-menu-bg: rgba(0, 0, 0, 0.9); /* Полупрозрачный черный для мобильного меню */
+        --transition-speed: 0.3s;
+        --header-height: 102px; /* Установим фиксированную высоту хедера */
+        --header-h: 0px;
+        --menu-gap: 8px;
+        {% if HEADER_BG_URL %}
+          --header-bg: url("{{ HEADER_BG_URL }}");
+        {% else %}
+          --header-bg: rgba(24, 24, 24, 0.6);
+        {% endif %}
     }
-        .nav-menu li a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 1.1rem;
-            padding: 0.5rem 0;
-            transition: color var(--transition-speed) ease;
-        }
-        .nav-menu li a:hover,
-        .nav-menu li a:focus {
-            color: var(--hover-color);
-            text-decoration: underline;
-            outline: none;
-        }
-        .hamburger-menu {
-            display: none;
-            flex-direction: column;
-            justify-content: space-around;
-            width: 30px;
-            height: 25px;
-            cursor: pointer;
-            position: relative;
-            z-index: 1100;
-            border: none;
-            background: transparent;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-        }
-        .hamburger-menu span {
-            display: block;
-            width: 100%;
-            height: 3px;
-            background-color: var(--text-color);
-            transition: all var(--transition-speed) ease-in-out;
-            border-radius: 2px;
-        }
-        .hamburger-menu.open span:nth-child(1) {
-            transform: translateY(11px) rotate(45deg);
-        }
-        .hamburger-menu.open span:nth-child(2) {
-            opacity: 0;
-        }
-        .hamburger-menu.open span:nth-child(3) {
-            transform: translateY(-11px) rotate(-45deg);
-        }
-
-    /* === Стили для выпадающего меню === */
-    .has-dropdown .dropdown-arrow {
-        margin-left: 5px;
-        font-size: 0.8em;
-        vertical-align: middle;
-        transition: transform 0.3s ease;
-    }
-    .has-dropdown:hover .dropdown-arrow {
-        transform: rotate(180deg); /* Стрелка поворачивается при наведении */
-    }
-    .dropdown-menu {
-        display: none; /* Изначально скрыто */
-        position: absolute;
-        top: 100%; /* Помещает выпадающий список прямо под родительским элементом */
-        left: 0;
-        right: auto;
-        background-color: #fff; /* Фон выпадающего списка */
-        min-width: 440px; /* Минимальная ширина */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        z-index: 1000; /* Чтобы выпадающий список был поверх других элементов */
-        list-style: none;
-        padding: 0;
+    body {
+        font-family: 'TextFont', Arial, sans-serif;
         margin: 0;
-        border-radius: 5px;
-        overflow: hidden; /* Для красивых границ */
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #fff;
+        color: var(--secondary-color);
     }
-    .dropdown-menu li a {
-        color: var(--primary-color);
-        padding: 10px 15px;
+    a {
+        font-family: 'TitleFont';
+        color: var(--accent-color);
         text-decoration: none;
-        display: block;
-        transition: background-color 0.2s ease;
+        transition: color var(--transition-speed) ease;
     }
-    .dropdown-menu li a:hover {
-        background-color: #f0f0f0;
+    a:hover, a:focus {
         color: var(--hover-color);
+        text-decoration: underline;
     }
-    /* Показываем выпадающий список при наведении на родительский li */
-    .has-dropdown:hover > .dropdown-menu {
-        display: block;
+        h1, h2, h3 {
+        font-family: 'TitleFont';
+        font-weight: 700; /* Жирное начертание */
     }
+    
+ /* === HEADER: общий вид и сценарий 1 (широкие экраны) === */
+header {
+  position: relative;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  background: var(--header-bg, rgba(24, 24, 24, 0.6));
+  background-size: cover;
+  background-position: center top; /* Выравнивает по верху */
+  background-repeat: no-repeat; /* Не повторяет изображение */
+  color: var(--text-color);
+  backdrop-filter: saturate(160%) blur(6px);
+  height: auto;
+  min-height: var(--header-height);
+  padding: 0.5rem 0.8rem; 
+  box-sizing: border-box;
+  font-family: 'MyCustomFont';
 
-        @media (max-width: 992px) {
-            .nav-menu {
-                display: none;
-                flex-direction: column;
-                position: fixed;
-                top: 0;
-                right: 0;
-                width: 100%;
-                height: 100vh;
-                background-color: var(--mobile-menu-bg);
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                transform: translateX(100%);
-                transition: transform var(--transition-speed) ease-in-out;
-                z-index: 999; /* Добавлено, чтобы меню было поверх всего */
-            }
-            .nav-menu.open {
-                display: flex;
-                transform: translateX(0);
-                color: var(--accent-color) !important;
-            }
-            .nav-menu li {
-                margin: 1rem 0;
-            }
-            .nav-menu li a {
-                font-size: 1.5rem;
-                color: var(--accent-color);
-            }
-            .hamburger-menu {
-                display: flex;
-            }
-            
+}
 
-        }
-        /* Accessibility: focus styles */
-        .hamburger-menu:focus-visible {
-            outline: 2px solid var(--accent-color);
-            outline-offset: 3px;
-        }
-        .nav-menu li a:focus-visible {
-            outline: 2px solid var(--accent-color);
-            outline-offset: 3px;
-            border-radius: 3px;
-        }
-        /* Basic content for demonstration */
-        main {
-            padding: 2rem;
+header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45); /* Чёрный с прозрачностью 30% */
+  backdrop-filter: blur(10px);
+  z-index: -1; /* Позади содержимого header */
+  
+}
+
+
+/* 1) Меню поверх картинки, но не фиксированное (не следует за экраном) */
+header.is-home {
+  position: absolute;          /* было fixed — убираем «прилипание» */
+  top: 0; left: 0; right: 0;
+  z-index: 1000;               /* выше оверлея и текста */
+  background: transparent !important; /* убираем полупрозрачный цвет */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+header.is-home::before {background: rgba(0, 0, 0, 0.0);}
+header .logo {
+  font-family: "PT Serif", Georgia, "Times New Roman", Times, serif;
+  font-weight: 700; /* строгий, но не тяжёлый; можно 600–700 */
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-block;
+  font-size: clamp(12px, 1.5vw, 18px);
+  font-weight: bold;
+  line-height: 1.15;
+  letter-spacing: 0.3px;
+  color: var(--text-color);
+  text-decoration: none;
+  white-space: normal !important;
+}
+header .logo .logo-br {
+  display: block;
+  height: 0;         /* без лишних зазоров */
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+}
+header nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+/* Бургер по умолчанию скрыт (появится в сценарии 3) */
+header .hamburger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 25px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1100;
+}
+header .hamburger-menu span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: var(--text-color);
+  transition: all var(--transition-speed) ease-in-out;
+  border-radius: 2px;
+}
+header .hamburger-menu.open span:nth-child(1) { transform: translateY(11px) rotate(45deg); }
+header .hamburger-menu.open span:nth-child(2) { opacity: 0; }
+header .hamburger-menu.open span:nth-child(3) { transform: translateY(-11px) rotate(-45deg); }
+/* Меню — одна строка на широких */
+header .nav-menu {
+  position: relative; /* для линии-разделителя в сценарии 2 */
+  display: flex;
+  align-items: center;
+  gap: 1.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+header .nav-menu li { position: relative; }
+header .nav-menu li a {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color var(--transition-speed) ease;
+  white-space: nowrap;
+}
+header .nav-menu li a:hover,
+header .nav-menu li a:focus {
+  color: var(--hover-color);
+  text-decoration: underline;
+  outline: none;
+}
+/* Дропдауны (поведение по hover на десктопе) */
+header .has-dropdown .dropdown-arrow {
+  margin-left: 5px;
+  font-size: 0.8em;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+header .has-dropdown:hover .dropdown-arrow { transform: rotate(180deg); }
+header .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 440px;
+  background-color: #fff;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+header .dropdown-menu li a {
+  display: block;
+  text-align: center;
+  color: var(--primary-color);
+  padding: 10px 15px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+header .dropdown-menu li a:hover {
+  background-color: #f0f0f0;
+  color: var(--hover-color);
+}
+header .has-dropdown:hover > .dropdown-menu { display: block; }
+header .has-dropdown.align-right > .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+/* === Сценарий 2: до 992px — лого в две строки, меню «пополам» в две строки + тонкая линия === */
+@media (max-width: 1210px) {
+  /* ВАЖНО: принудительно показываем меню, даже если где-то было display: none */
+  header .nav-menu {
+    display: grid !important;
+    grid-auto-flow: column;           /* заполняем по колонкам */
+    grid-auto-columns: max-content;   /* ширина колонок = ширине пунктов */
+    grid-template-rows: repeat(2, auto);
+    align-items: center;
+    column-gap: 1.2rem;
+    row-gap: 0.6rem;
+    white-space: nowrap;
+    position: relative;
+  }
+  /* Тонкая белая линия между 1-й и 2-й строками меню */
+  header .nav-menu::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1px;
+    background: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+  }
+  /* Логотип переносится на две строки */
+  header .logo {
+    font-family: "PT Serif", Georgia, "Times New Roman", Times, serif;
+    font-weight: 700; /* строгий, но не тяжёлый; можно 600–700 */
+    font-size: clamp(18px, 1.6vw, 16px);
+    white-space: normal !important;
+    overflow-wrap: normal;
+    line-height: 1.15;
+    letter-spacing: 0.3px;
+  }
+    header .logo .logo-br {
+    display: block;
+    height: 0;         /* без лишних зазоров */
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+    }
+  /* Подменю можно оставить как есть; при нехватке места подумайте о click-логике */
+  header .dropdown-menu { min-width: 360px; }
+}
+/* === Сценарий 3: до ~720px — лого снова в одну строку, справа бургер, меню off-canvas === */
+@media (max-width: 890px) {
+    header { position: relative; }
+    
+    header .logo {
+    grid-column: 1 / -1;
+    font-family: "PT Serif", Georgia, "Times New Roman", Times, serif;
+    font-weight: 700; /* строгий, но не тяжёлый; можно 600–700 */
+    white-space: normal !important;
+    overflow-wrap: normal;
+    padding-right: 56px;
+    font-size: clamp(16px, 1.6vw, 16px);
+    letter-spacing: 0.3px;
+    max-width: none !important;
+    padding-right: 56px;
+  }
+    header .logo .logo-br {
+    display: block;
+    height: 0;         /* без лишних зазоров */
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+  header .hamburger-menu {
+    display: flex;                    /* показываем бургер */
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1000;
+  }
+  /* off-canvas меню: по умолчанию скрыто за правым краем */
+  header .nav-menu {
+    display: flex !important;         /* поверх grid из сценария 2 */
+    flex-direction: column;
+    gap: 1rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    padding: 5.5rem 2rem 2rem;        /* отступ под фиксированную шапку */
+    background-color: var(--mobile-menu-bg);
+    transform: translate3d(100%, 0, 0);           /* GPU-акселерация */
+    transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;                        /* подсказываем браузеру */
+    backface-visibility: hidden;
+    contain: paint; 
+    white-space: normal;
+    overflow-y: auto;
+    z-index: 999;
+  }
+  header .nav-menu.open {
+    transform: translateX(0);
+  }
+
+  /* Линию-разделитель убираем в режиме off-canvas */
+  header .nav-menu::after {
+    display: none;
+  }
+  header .nav-menu li a:hover,
+  header .nav-menu li a:focus {
+    color: var(--accent-color);
+    text-decoration: underline;
+    outline: none;
+  }
+}
+/* Доступность */
+header .hamburger-menu:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+header .nav-menu li a:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+        
+    /* Basic content for demonstration */
+    main {
+            padding: 1rem;
             max-width: 960px;
-            margin: 2rem auto;
+            margin: 1rem auto;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
+    }
+    h1 {
             color: var(--primary-color);
-        }
-        .main-footer {
+            
+
+    }
+    .main-footer {
             background-color: var(--primary-color); /* Используем цвет хедера для согласованности */
             color: var(--text-color);
             padding: 3rem 2rem;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Тень сверху */
             font-size: 0.9rem;
-        }
-.footer-container {
+    }
+    .footer-container {
     max-width: 1200px; /* Ограничиваем ширину содержимого футера */
     margin: 0 auto; /* Центрируем */
     display: flex;
     flex-wrap: wrap; /* Позволяет секциям переноситься на новую строку на маленьких экранах */
     justify-content: space-between;
     gap: 2rem; /* Отступ между колонками */
-}
-.footer-section {
+    }
+    .footer-section {
     flex: 1; /* Каждая секция занимает равное пространство */
     min-width: 250px; /* Минимальная ширина для каждой секции, чтобы не стать слишком узкой */
-}
-.footer-section h3 {
+    }
+    .footer-section h3 {
     color: var(--accent-color); /* Акцентный цвет для заголовков */
     margin-bottom: 1rem;
     font-size: 1.1rem;
-}
-.footer-section p,
-.footer-section ul {
+    }
+    .footer-section p,
+    .footer-section ul {
     margin: 0;
     padding: 0;
     list-style: none; /* Убираем маркеры списка */
-}
-.footer-section ul li {
+    }
+    .footer-section ul li {
     margin-bottom: 0.5rem;
-}
-.footer-section a {
+    }
+    .footer-section a {
     color: var(--text-color);
     text-decoration: none;
     transition: color var(--transition-speed) ease;
-}
-.footer-section a:hover,
-.footer-section a:focus {
+    }
+    .footer-section a:hover,
+    .footer-section a:focus {
     color: var(--accent-color);
     text-decoration: underline;
-}
-.footer-bottom {
+    }
+    .footer-bottom {
     text-align: center;
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1); /* Разделитель */
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.7);
-}
-.footer-bottom a {
+    }
+    .footer-bottom a {
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     transition: color var(--transition-speed) ease;
-}
-.footer-bottom a:hover,
-.footer-bottom a:focus {
+    }
+    .footer-bottom a:hover,
+    .footer-bottom a:focus {
     color: var(--accent-color);
     text-decoration: underline;
-}
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
+    }
+    /* Адаптивность для мобильных устройств */
+    .nav-menu .mobile-home-item { display: none; }
+    @media (max-width: 720px) {
+    .nav-menu .mobile-home-item { display: list-item; }
+    }
     .main-footer {
         padding: 2rem 1rem;
     }
@@ -326,8 +440,8 @@ a:hover, a:focus {
         margin-top: 2rem;
         padding-top: 1rem;
     }
-}
-
+    }
+    
 
 
 

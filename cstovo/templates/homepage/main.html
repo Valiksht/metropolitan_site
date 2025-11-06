@@ -3,153 +3,264 @@
 
 {% block extra_css %}
     {{ block.super }}
-    <style>
+
         /* Hero: контейнер секции на всю ширину, фиксирует позиционирование и высоту */
         .hero-section {
-          isolation: isolate;              /* создаёт новый стек контекста */
-          margin-bottom: 2.5rem;           /* зазор после hero, чтобы новости не прилипали */
-          position: relative;              /* базовое позиционирование контейнера */
-          min-height: 70vh;                /* высота hero */
-          display: grid;                   /* центрирование контента */
+
+        }
+        .hero-section {
+          isolation: isolate;
+          margin-bottom: 0;           /* зазор после hero, чтобы новости не прилипали */
+          padding-bottom: clamp(32px, 6vw, 80px);             /* базовое позиционирование контейнера */
+          position: relative;
           place-items: center;
-          text-align: center;
-          color: #fff;
-          overflow: hidden;
           background-color: #1c1c1c;       /* фоновая заглушка */
-          padding-top: var(--header-height); /* если шапка фиксированная */
+          margin: 0;
+          padding-top: 0;
+          padding: 0 !important;       /* обнуляем padding, чтобы overlay = картинка */
+          display: block !important;   /* выключаем grid/центрирование контейнера */
+          text-align: left;
+          max-height: 70vh; 
+          min-height: 40vh !important;
+          overflow: hidden;
+          color: #fff;
+        }
+        main {
+          margin-top: 0;
         }
 
         /* Hero: фоновое изображение на всю область без искажений */
         .hero-background-image {
-            position: absolute;
             inset: 0;          /* top/left/right/bottom: 0 */
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Заполняем блок, сохраняя пропорции (возможна лёгкая обрезка по краям) */
             z-index: 0;
+            position: static !important; /* снимаем absolute/inset */
+            display: block;
+            width: 100%;
+            height: auto !important;     /* сохраняем пропорции */
+            max-width: 100%;
+
         }
+          /* Фоновое изображение растянуто на секцию без искажений */
+        .hero-background-image {
+          position: absolute;  
+          inset: 0;   
+          z-index: 0;
+          display: block;
+          width: 100%;
+          height: 100%; 
+          max-height: 70vh;
+          min-height: 40vh !important;
+          object-fit: cover;  
+          object-position: center bottom; 
+          overflow: hidden;
+        }
+
 
         /* Hero: полупрозрачное затемнение поверх изображения */
         .hero-bg-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45); /* «Слегка затемнено» */
+            background: rgba(0, 0, 0, 0.2); /* «Слегка затемнено» */
             z-index: 1;
+            pointer-events: none;
         }
+        .hero-bg-overlay {
+  position: absolute;
+  inset: 0;                    /* растягивается по высоте секции = высоте картинки */
+  background: rgba(0,0,0,0.45);
+  z-index: 1;
+  pointer-events: none;
+}
+
+  /* Полупрозрачное затемнение поверх изображения */
+  .hero-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+    pointer-events: none;
+  }
 
         /* Hero: обёртка текста поверх затемнения */
         .hero-content {
-            position: relative;
-            z-index: 2;
-            padding: 1rem;
-            max-width: 960px; /* Ограничиваем ширину текста на очень широких экранах */
-        }
+              position: absolute;
+              z-index: 2;
+              top: 50%;
+              left: clamp(16px, 6vw, 72px);      /* отступ слева */
+              right: clamp(16px, 6vw, 72px);     /* чтобы текст не прилипал к правому краю */
+              transform: translateY(-50%);       /* вертикальный центр относительно высоты картинки */
+              text-align: left;                  /* выравнивание строк */
+              max-width: min(960px, 100%);
+              color: #fff;
+            }
+            .hero-content {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: clamp(16px, 6vw, 72px);
+  right: clamp(16px, 6vw, 72px);
+  transform: translateY(-50%);
+  max-width: min(960px, 100%);
+  text-align: left;
+  color: #fff;
+  margin-top: 45px;
+}
+
+
 
         /* Hero: главный заголовок */
         .hero-content h1 {
-            margin: 0 0 0.5rem 0;
-            font-weight: 700;
+            margin: 0 0 0.75rem 0;
+            font-weight: 800;
             letter-spacing: 0.5px;
             color: #fff !important;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.5); /* Улучшаем читаемость на светлых фото */
-            font-size: clamp(28px, 5vw, 56px);     /* Адаптивный размер */
+            text-shadow: 0 3px 10px rgba(0,0,0,0.55); /* Улучшаем читаемость на светлых фото */
+            font-size: clamp(44px, 9vw, 96px);     /* Адаптивный размер */
+            line-height: 1.05;
+            white-space: normal;
         }
 
         /* Hero: подзаголовок */
         .hero-content p {
             margin: 0;
             opacity: 0.95;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
             color: #fff !important;
-            font-size: clamp(16px, 2.5vw, 22px);   /* Адаптивный размер */
+            font-size: clamp(24px, 2.2vw, 32px);   /* Адаптивный размер */
             line-height: 1.4;
+            max-width: 28ch;
         }
 
+
         /* Ниже — стили списка новостей (оставлены как есть, без правок логики и внешнего вида) */
+.hero-section + main {
+  margin-top: 0;   /* если раньше добавляли отступ — можно убрать */
+}
+
+        /* ========================================================================= */
+        /* === Стили для карточек новостей                                       === */
+        /* ========================================================================= */
+
         .news-list-page-container {
-          position: relative;              /* создаём собственный контекст для верного наложения */
-          z-index: 3;                      /* выше любых элементов hero */
-          clear: both;                     /* если где-то были float — начинаем ниже */
-          margin-top: 0;
+            max-width: 960px; /* Ограничиваем общую ширину контента для читабельности */
+            margin: 2rem auto;
+            padding: 0 1.5rem; /* Добавляем горизонтальные отступы для маленьких экранов */
         }
+
         .news-list-page-container h1 {
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 3rem;
             font-size: 2.5rem;
         }
-        .news-cards-list {
+
+        /* Контейнер для новостей */
+        .news-cards-list { /* ИЗМЕНЕНО: был .news-cards-container в HTML */
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
+            gap: 2.5rem; /* Отступ между карточками новостей */
         }
-        .news-card {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
+
+        /* Обертка для всей карточки, чтобы она стала кликабельной ссылкой */
+        .news-card-link { /* ДОБАВЛЕНО */
+            display: flex; /* Делаем ссылку флекс-контейнером, как раньше была карточка */
+            flex-direction: row; /* Изображение слева, текст справа */
+            align-items: flex-start; /* Выравнивание элементов по верху */
             background-color: #fff;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            padding: 1.5rem;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 1.5rem; /* Внутренние отступы для карточки */
+            width: 100%; /* Занимает всю доступную ширину родителя */
+            box-sizing: border-box; /* padding не увеличивает ширину */
+            text-decoration: none; /* Убираем подчеркивание у ссылки */
+            color: inherit; /* Наследуем цвет текста, чтобы он не был синим */
+            cursor: pointer; /* ДОБАВЛЕНО: курсор-указатель */
         }
-        .news-card:hover {
+
+
+        .news-card-link:hover { /* ИЗМЕНЕНО: теперь hover применяется к ссылке */
             transform: translateY(-5px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         .news-image-wrapper {
-            flex-shrink: 0;
-            width: 250px;
-            height: 280px;
+            flex-shrink: 0; /* Изображение не будет сжиматься */
+            width: 250px; /* Фиксированная ширина для изображения */
+            height: 280px; /* Фиксированная высота */
             margin-right: 1.5rem;
             border-radius: 6px;
-            overflow: hidden;
+            overflow: hidden; /* Обрезает изображение, если оно выходит за рамки */
         }
+
         .news-card-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Заполняет контейнер, сохраняя пропорции */
             display: block;
         }
+
         .news-card-content {
-            flex-grow: 1;
+            flex-grow: 1; /* Контент займет все оставшееся пространство */
             display: flex;
             flex-direction: column;
         }
+
         .news-card-content h2 {
-            color: var(--primary-color);
+            color: var(--title-color); /* Используем переменную для цвета заголовка */
             font-size: 1.8rem;
             margin-top: 0;
             margin-bottom: 0.5rem;
             line-height: 1.3;
         }
+
         .news-date {
             font-size: 0.9rem;
             color: var(--secondary-color);
             margin-bottom: 1rem;
             opacity: 0.7;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
+
         .news-card-content p {
-            font-size: 1rem;
+            font-size: 1.4rem;
             color: var(--secondary-color);
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
+            margin-bottom: 1.5rem; /* ИЗМЕНЕНО: уменьшил margin-bottom, так как кнопки "Читать далее" нет */
+            flex-grow: 1; /* Описание может растягиваться */
         }
-        .read-more-button {
-            display: inline-block;
-            padding: 0.6rem 1.2rem;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 5px;
-            align-self: flex-start;
-            transition: background-color var(--transition-speed) ease;
+
+
+        .no-news {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
         }
-        .read-more-button:hover {
-            background-color: var(--hover-color);
+
+        .photo-info {
+            display: inline-flex;
+            align-items: center;
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1;
+            font-weight: normal;
+            margin-left: 8px; /* Отступ от даты */
+        }
+
+        .camera-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            color: var(--secondary-color);
+        }
+
+        .count-number {
+            vertical-align: middle;
+            font-size: 1.4rem;
+            color: var(--secondary-color);
         }
         .no-news {
             text-align: center;
@@ -166,45 +277,38 @@
             padding: 0.8rem 1.5rem;
             background-color: var(--accent-color);
             color: var(--text-color);
+            font-size: 1.2rem;
             text-decoration: none;
             border-radius: 5px;
             transition: background-color var(--transition-speed) ease;
         }
         .all-news-button:hover {
             background-color: var(--hover-color);
+            color: var(--text-color);
         }
 
-        /* Адаптивность: корректируем размеры hero-текста и карточек новостей */
-        @media (max-width: 992px) {
-            .news-list-page-container h1 { font-size: 2rem; }
-            .news-card { flex-direction: column; align-items: center; padding: 1rem; }
-            .news-image-wrapper { width: 100%; height: 180px; margin-right: 0; margin-bottom: 1rem; }
-            .news-card-content { text-align: center; }
-            .news-card-content h2 { font-size: 1.5rem; }
-        }
+
         @media (max-width: 480px) {
             .hero-section { min-height: 55vh; }
         }
-    </style>
+
 {% endblock %}
 
 {% block main_out %}
-    <!-- Hero: первая секция с фоновым изображением и текстом -->
-    <section class="hero-section">
-        <!-- Hero: затемняющая подложка поверх изображения -->
-        <div class="hero-bg-overlay"></div>
-
-        <!-- Hero: фон-картинка из контекста base_image -->
-        {% if base_image %}
-            <img src="{{ base_image.image.url }}" alt="Фоновое изображение" class="hero-background-image">
-        {% endif %}
-
-        <!-- Hero: текстовый контент поверх изображения -->
-        <div class="hero-content">
-            <h1>Кстовская митрополия</h1>
-            <p>Добро пожаловать в мир веры и благочестия</p>
-        </div>
-    </section>
+  <!-- Hero: первая секция с фоновым изображением и текстом -->
+  <section class="hero-section">
+    <!-- Hero: затемняющая подложка поверх изображения -->
+    <div class="hero-bg-overlay"></div>
+    <!-- Hero: фон-картинка из контекста base_image -->
+    {% if base_image %}
+      <img src="{{ base_image.image.url }}" alt="Фоновое изображение" class="hero-background-image">
+    {% endif %}
+    <!-- Hero: текстовый контент поверх изображения -->
+    <div class="hero-content">
+      <h1>КСТОВСКОЕ<wbr> БЛАГОЧИНИЕ</h1>
+      <p>Русская Православная Церковь<wbr> Московский патриархат<wbr> Нижегородская Епархия</p>
+    </div>
+  </section>
 {% endblock %}
 
 {% block content %}
@@ -213,19 +317,36 @@
         <h1>Главные новости</h1>
         <div class="news-cards-list">
             {% for news_item in main_news_list %}
-                <div class="news-card">
-                    {% if news_item.image %}
-                        <div class="news-image-wrapper">
-                            <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-card-image">
-                        </div>
+                      <a href="{% url 'temple:news_detail' news_item.pk %}" class="news-card-link"> {# ИЗМЕНЕНО: вся карточка теперь ссылка #}
+              {% if news_item.small_image %}
+              <div class="news-image-wrapper">
+                  <img src="{{ news_item.small_image.url }}" alt="{{ news_item.title }}" class="news-card-image">
+              </div>
+              {% endif %}
+
+              <div class="news-card-content">
+                <h2>{{ news_item.title }}</h2>
+                <p class="news-date">
+                    {{ news_item.date|date:"d M Y" }}
+                    {% if news_item.num_images > 0 %}
+                        <span class="photo-info" title="Количество фотографий">
+                            <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                                <path d="M53.25,61H10.75A7.76,7.76,0,0,1,3,53.25V26.75A7.76,7.76,0,0,1,10.75,19h42.5A7.76,7.76,0,0,1,61,26.75v26.5A7.76,7.76,0,0,1,53.25,61ZM10.75,21A5.76,5.76,0,0,0,5,26.75v26.5A5.76,5.76,0,0,0,10.75,59h42.5A5.76,5.76,0,0,0,59,53.25V26.75A5.76,5.76,0,0,0,53.25,21Z"/>
+                                <path d="M42,21H22a1,1,0,0,1-1-1V17.31A6.32,6.32,0,0,1,27.31,11h9.38A6.32,6.32,0,0,1,43,17.31V20A1,1,0,0,1,42,21ZM23,19H41V17.31A4.31,4.31,0,0,0,36.69,13H27.31A4.31,4.31,0,0,0,23,17.31Z"/>
+                                <path d="M32,53A11,11,0,1,1,43,42,11,11,0,0,1,32,53Zm0-20a9,9,0,1,0,9,9A9,9,0,0,0,32,33Z"/>
+                                <path d="M32,57A15,15,0,1,1,47,42,15,15,0,0,1,32,57Zm0-28A13,13,0,1,0,45,42,13,13,0,0,0,32,29Z"/>
+                                <path d="M16,34H8a1,1,0,0,1-1-1V25a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v8A1,1,0,0,1,16,34ZM9,32h6V26H9Z"/>
+                                <path d="M56,29H48a1,1,0,0,1-1-1V24a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v4A1,1,0,0,1,56,29Zm-7-2h6V25H49Z"/>
+                                <path d="M38,21H26a1,1,0,0,1-1-1V16a1,1,0,0,1,1-1H38a1,1,0,0,1,1,1v4A1,1,0,0,1,38,21ZM27,19H37V17H27Z"/>
+                            </svg>
+                            <span class="count-number">{{ news_item.num_images }}</span>
+                        </span>
                     {% endif %}
-                    <div class="news-card-content">
-                        <h2>{{ news_item.title }}</h2>
-                        <p class="news-date">{{ news_item.date|date:"d M Y" }}</p>
-                        <p>{{ news_item.description|truncatechars:150 }}</p>
-                        <a href="{% url 'temple:news_detail' news_item.pk %}" class="read-more-button">Читать далее</a>
-                    </div>
-                </div>
+                </p>
+                <p>{{ news_item.description|truncatechars:150 }}</p> {# Обрезаем описание до 150 символов #}
+              </div>
+          </a>
+
             {% empty %}
                 <p class="no-news">На данный момент главных новостей нет.</p>
             {% endfor %}
@@ -234,19 +355,36 @@
         <h1>Все новости</h1>
         <div class="news-cards-list">
             {% for news_item in all_news_list %}
-                <div class="news-card">
-                    {% if news_item.image %}
-                        <div class="news-image-wrapper">
-                            <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-card-image">
-                        </div>
+                      <a href="{% url 'temple:news_detail' news_item.pk %}" class="news-card-link"> {# ИЗМЕНЕНО: вся карточка теперь ссылка #}
+              {% if news_item.small_image %}
+              <div class="news-image-wrapper">
+                  <img src="{{ news_item.small_image.url }}" alt="{{ news_item.title }}" class="news-card-image">
+              </div>
+              {% endif %}
+
+              <div class="news-card-content">
+                <h2>{{ news_item.title }}</h2>
+                <p class="news-date">
+                    {{ news_item.date|date:"d M Y" }}
+                    {% if news_item.num_images > 0 %}
+                        <span class="photo-info" title="Количество фотографий">
+                            <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                                <path d="M53.25,61H10.75A7.76,7.76,0,0,1,3,53.25V26.75A7.76,7.76,0,0,1,10.75,19h42.5A7.76,7.76,0,0,1,61,26.75v26.5A7.76,7.76,0,0,1,53.25,61ZM10.75,21A5.76,5.76,0,0,0,5,26.75v26.5A5.76,5.76,0,0,0,10.75,59h42.5A5.76,5.76,0,0,0,59,53.25V26.75A5.76,5.76,0,0,0,53.25,21Z"/>
+                                <path d="M42,21H22a1,1,0,0,1-1-1V17.31A6.32,6.32,0,0,1,27.31,11h9.38A6.32,6.32,0,0,1,43,17.31V20A1,1,0,0,1,42,21ZM23,19H41V17.31A4.31,4.31,0,0,0,36.69,13H27.31A4.31,4.31,0,0,0,23,17.31Z"/>
+                                <path d="M32,53A11,11,0,1,1,43,42,11,11,0,0,1,32,53Zm0-20a9,9,0,1,0,9,9A9,9,0,0,0,32,33Z"/>
+                                <path d="M32,57A15,15,0,1,1,47,42,15,15,0,0,1,32,57Zm0-28A13,13,0,1,0,45,42,13,13,0,0,0,32,29Z"/>
+                                <path d="M16,34H8a1,1,0,0,1-1-1V25a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v8A1,1,0,0,1,16,34ZM9,32h6V26H9Z"/>
+                                <path d="M56,29H48a1,1,0,0,1-1-1V24a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v4A1,1,0,0,1,56,29Zm-7-2h6V25H49Z"/>
+                                <path d="M38,21H26a1,1,0,0,1-1-1V16a1,1,0,0,1,1-1H38a1,1,0,0,1,1,1v4A1,1,0,0,1,38,21ZM27,19H37V17H27Z"/>
+                            </svg>
+                            <span class="count-number">{{ news_item.num_images }}</span>
+                        </span>
                     {% endif %}
-                    <div class="news-card-content">
-                        <h2>{{ news_item.title }}</h2>
-                        <p class="news-date">{{ news_item.date|date:"d M Y" }}</p>
-                        <p>{{ news_item.description|truncatechars:150 }}</p>
-                        <a href="{% url 'temple:news_detail' news_item.pk %}" class="read-more-button">Читать далее</a>
-                    </div>
-                </div>
+                </p>
+                <p>{{ news_item.description|truncatechars:150 }}</p> {# Обрезаем описание до 150 символов #}
+              </div>
+          </a>
+
             {% empty %}
                 <p class="no-news">На данный момент новостей нет.</p>
             {% endfor %}

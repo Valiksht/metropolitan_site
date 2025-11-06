@@ -17,7 +17,8 @@
     }
     .cards-grid-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        {% comment %} grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); {% endcomment %}
         gap: 2rem;
     }
     .card-item {
@@ -54,10 +55,11 @@
         text-align: center; /* Центрируем текст внутри карточки */
     }
     .card-content h2 {
-        font-size: 1.8rem;
+        font-size: 1.3rem;
         margin-top: 0;
         margin-bottom: 0.5rem;
         color: var(--primary-color);
+        font-family: 'TitleFont';
     }
     .card-content p {
         font-size: 1rem;
@@ -79,14 +81,21 @@
     .card-content .read-more-button:hover {
         background-color: var(--hover-color);
     }
-    @media (max-width: 600px) {
-        .cards-grid-container {
-            grid-template-columns: 1fr; /* Одна колонка на маленьких экранах */
-        }
-        .list-page-container {
-            padding: 0 1rem;
-        }
-    }
+    @media (max-width: 900px) {
+  .cards-grid-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .cards-grid-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 500px) {
+  .cards-grid-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 {% endblock %}
 {% block content %}
 <div class="list-page-container">
@@ -94,9 +103,9 @@
     <div class="cards-grid-container">
         {% for clergy_member in clergy_list %}
         <a href="{% url 'temple:clergy_detail' clergy_member.pk %}" class="card-item">
-            {% if clergy_member.image %}
+            {% if clergy_member.small_image %}
             <div class="card-image-wrapper">
-                <img src="{{ clergy_member.image.url }}" alt="{{ clergy_member.name }}">
+                <img src="{{ clergy_member.small_image.url }}" alt="{{ clergy_member.name }}">
             </div>
             {% else %}
             <div class="card-image-wrapper">
@@ -104,7 +113,7 @@
             </div>
             {% endif %}
             <div class="card-content">
-                <h2>{{ clergy_member.name }}</h2>
+                <h2>{{ clergy_member.get_runk_display }} {{ clergy_member.first_name }} {{ clergy_member.last_name }}</h2>
                 <p>{{ clergy_member.description|truncatechars:100 }}</p>
                 {# Кнопка "Читать далее" уже не нужна, т.к. вся карточка кликабельна #}
             </div>

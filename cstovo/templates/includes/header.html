@@ -1,5 +1,8 @@
-<header>
-    <a href="{% url 'temple:homepage' %}" class="logo">Кстовское благочиние</a> {# Используйте реальное имя вашего приложения #}
+<header class="{% if request.resolver_match.url_name == 'homepage' %}is-home{% endif %}">
+    <a href="{% url 'temple:homepage' %}" class="logo">
+        РУССКАЯ ПРАВОСЛАВНАЯ ЦЕРКОВЬ<span class="logo-br" aria-hidden="true"></span> 
+        НИЖЕГОРОДСКАЯ МИТРОПОЛИЯ<span class="logo-br" aria-hidden="true"></span>
+        НИЖЕГОРОДСКАЯ ЕПАРХИЯ</a>
     <nav role="navigation" aria-label="Основная навигация">
         <button class="hamburger-menu" aria-label="Открыть или закрыть меню навигации" aria-expanded="false" aria-controls="main-nav-menu">
             <span></span>
@@ -14,8 +17,9 @@
             <li class="has-dropdown">
                 <a href="{% url 'temple:deal' %}">Деятельность<span class="dropdown-arrow"></span></a>
                 <ul class="dropdown-menu">
+                    <li><a href="{% url 'temple:deal' %}">Все направления</a></li>
                     {% for deal_item in all_deal %}
-                        <li><a href="{% url 'temple:deal_detail' pk=deal_item.pk %}">{{ deal_item.stream }}</a></li>
+                        <li><a href="{% url 'temple:deal_detail' pk=deal_item.pk %}">{{ deal_item.short_stream }}</a></li>
                     {% empty %}
                         <li><a href="#">Деятельность не найдена</a></li>
                     {% endfor %}
@@ -24,6 +28,7 @@
             <li class="has-dropdown">
                 <a href="{% url 'temple:secret' %}">Таинства<span class="dropdown-arrow"></span></a>
                 <ul class="dropdown-menu">
+                    <li><a href="{% url 'temple:secret' %}">Все таинства</a></li>
                     {% for secret_item in all_secrets %}
                         <li><a href="{% url 'temple:secret_detail' pk=secret_item.pk %}">{{ secret_item.name }}</a></li>
                     {% empty %}

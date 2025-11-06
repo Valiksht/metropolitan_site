@@ -1,103 +1,222 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{{ clergy.name }} - {{ title }} - Кстовская митрополия{% endblock %}
+
+{% block title %}{{ clergy.get_runk_display }} {{ clergy.first_name }} {{ clergy.last_name }} - {{ title }} - Кстовская митрополия{% endblock %}
+
 {% block extra_css %}
-    {{ block.super }}
-    /* Стили для детальной страницы */
-    .detail-page-container {
-        max-width: 900px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    .detail-page-container .back-link {
-        display: inline-block;
-        margin-bottom: 2rem;
-        padding: 0.8rem 1.5rem;
-        background-color: #f0f0f0;
-        color: var(--primary-color);
-        text-decoration: none;
-        border-radius: 5px;
-        transition: background-color 0.3s ease;
-    }
-    .detail-page-container .back-link:hover {
-        background-color: #e0e0e0;
-    }
-    .detail-image {
-        width: 100%;
-        height: auto;
-        max-height: auto;
-        object-fit: contain;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        display: block;
-    }
-    .detail-title {
-        font-size: 3rem;
-        color: var(--primary-color);
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-    .detail-description {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #333;
-    }
-    @media (max-width: 768px) {
-        .detail-page-container {
-            margin: 1rem;
-            padding: 1.5rem;
-        }
-        .detail-title {
-            font-size: 2.2rem;
-        }
-    }
-        .clergy-list-detail {
-        list-style: none;
-        padding: 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-    }
-    .clergy-list-detail li {
-        background-color: #f9f9f9;
-        padding: 1rem;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        text-align: center;
-    }
-    .clergy-list-detail li a {
-        text-decoration: none;
-        color: var(--primary-color);
-        font-weight: bold;
-    }
-    .clergy-list-detail li a:hover {
-        color: var(--accent-color);
-    }
+{{ block.super }}
+<style>
+  .detail-page-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    padding: 0.6rem 1rem;
+    background-color: #f0f0f0;
+    color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  .back-link:hover { background-color: #e8e8e8; }
+
+  /* Двухколоночный макет */
+  .detail-layout {
+    display: grid;
+    grid-template-columns: 40% 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .detail-photo {
+    width: 100%;
+  }
+  .detail-photo img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover; /* фото будет заполнять колонку */
+    display: block;
+  }
+
+  .detail-info {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  /* Одна строка: Сан Имя Фамилия */
+  .clergy-headline {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+  }
+
+  .info-block {
+    background: #f9fafb;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .info-block h3 {
+    margin: 0 0 .5rem 0;
+    font-size: 1.6rem;
+    color: #444;
+  }
+
+  /* post как маркированный список */
+  .post-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .post-list li { margin: .25rem 0; font-size: 1.4rem;}
+
+   /* Блок храмов */
+  .clergy-section { margin-top: 1.5rem; }
+  .clergy-section h2 { margin-bottom: 1rem; }
+  /* Сетка: 1 / 2 / 3 колонки, одиночная — по центру */
+  .temples-grid {
+    display: grid;
+    gap: 1rem;
+    justify-content: center;  /* центрируем, когда карточек мало */
+    justify-items: center;    /* центр содержимого в ячейке */
+  }
+  /* Desktop: максимум 3 */
+  @media (min-width: 992px) {
+    .temples-grid { grid-template-columns: repeat(3, min(300px, 100%)); }
+  }
+  /* Tablet: 2 */
+  @media (min-width: 600px) and (max-width: 991px) {
+    .temples-grid { grid-template-columns: repeat(2, min(300px, 100%)); }
+  }
+  /* Mobile: 1 */
+  @media (max-width: 599px) {
+    .temples-grid { grid-template-columns: min(300px, 100%); }
+  }
+  .temple-card {
+    width: min(300px, 100%);
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    padding: .75rem;
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .temple-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .temple-card-image img {
+    width: 100%;
+    height: auto;
+    max-width: 300px;
+    max-height: 300px;
+    object-fit: cover;   /* аккуратная обрезка */
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto;
+  }
+  .temple-card-body h3 {
+    margin: .25rem 0 0 0;
+    font-size: 1.4rem;
+    text-align: center;
+    color: var(--primary-color);
+  }
+  .temple-card-body p {
+    font-size: 1.4rem;
+    color: var(--secondary-color);
+    font-style: 'TextFont';
+    text-align: center;
+    margin-bottom: 0.5rem;
+    flex-grow: 1;
+  }
+  /* Мобильная перестройка колонок */
+  @media (max-width: 700px) {
+    .detail-layout { grid-template-columns: 1fr; }
+    .clergy-headline { font-size: 1.6rem; }
+  }
+</style>
 {% endblock %}
+
 {% block content %}
 <div class="detail-page-container">
-    <a href="{% url 'temple:clergy' %}" class="back-link">&larr; Ко всему духовенству</a>
-    {% if clergy.image %}
-        <img src="{{ clergy.image.url }}" alt="{{ clergy.name }}" class="detail-image">
-    {% else %}
-        <img src="{{ MEDIA_URL }}base_images/base_clergy.jpg" alt="Изображение по умолчанию" class="detail-image">
-    {% endif %}
-    <h1 class="detail-title">{{ clergy.name }}</h1>
-    <div class="detail-description">
-        {{ clergy.description|linebreaks }}
+
+  <a href="{% url 'temple:clergy' %}" class="back-link">&larr; Ко всему духовенству</a>
+
+  <div class="detail-layout">
+    <!-- Левая колонка: фото (40%) -->
+    <div class="detail-photo">
+      {% if clergy.image %}
+        <img src="{{ clergy.image.url }}" alt="{{ clergy.get_runk_display }} {{ clergy.first_name }} {{ clergy.last_name }}">
+      {% else %}
+        <img src="{{ MEDIA_URL }}base_images/base_clergy.jpg" alt="Изображение по умолчанию">
+      {% endif %}
     </div>
-        {% if temple_list %}
-    <div class="clergy-section">
-        <h2>Места служения:</h2>
-        <ul class="clergy-list-detail">
-            {% for temple in temple_list %}
-                <li><a href="{% url 'temple:temple_detail' temple.pk %}">{{ temple.name }}</a></li>
-            {% endfor %}
+
+    <!-- Правая колонка: блоки с данными -->
+    <div class="detail-info">
+      <h1 class="clergy-headline">
+        {{ clergy.get_runk_display }} {{ clergy.first_name }} {{ clergy.last_name }}
+      </h1>
+
+      {% if clergy.post %}
+      <div class="info-block">
+        <h3>Епархиальные послушания</h3>
+        <ul class="post-list">
+          {% for line in post_list %}
+            <li>{{ line }}</li>
+          {% endfor %}
         </ul>
+      </div>
+      {% endif %}
+
+      {% comment %} {# При необходимости добавляйте другие блоки по условию:
+      {% if clergy.some_other_field %}
+      <div class="info-block">
+        <h3>Заголовок</h3>
+        <p>{{ clergy.some_other_field }}</p>
+      </div>
+      {% endif %}
+      #} {% endcomment %}
     </div>
-    {% endif %}
+  </div>
+
+  {% if temple_list %}
+    <div class="clergy-section">
+      <h2>Места служения:</h2>
+      <div class="temples-grid">
+        {% for temple_item in temple_list %}
+          <a href="{% url 'temple:temple_detail' temple_item.pk %}" class="temple-card">
+            <div class="temple-card-image">
+              {% if temple_item.temple.small_image %}
+                <img src="{{ temple_item.temple.small_image.url }}" alt="{{ temple_item.name }}">
+              {% else %}
+                <img src="{{ base_temple.image.url }}" alt="Изображение по умолчанию">
+              {% endif %}
+            </div>
+            <div class="temple-card-body">
+              <h3>{{ temple_item.temple.name }}</h3>
+              <p>{{ temple_item.post }}</p>
+            </div>
+          </a>
+        {% empty %}
+          <p>На данный момент информация о храмах отсутствует.</p>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
 </div>
-{% endblock content %}
+{% endblock %}
