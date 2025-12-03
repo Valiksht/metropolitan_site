@@ -5,7 +5,8 @@
 {% block title %}{{ temple.name }} - Кстовская митрополия{% endblock %}
 
 {% block extra_css %}
-    <style>
+    {{ block.super }}
+
         /* ========================================================================= */
         /* === ОБЩИЕ СТИЛИ ДЕТАЛЬНОЙ СТРАНИЦЫ (detail-page-container)            === */
         /* ========================================================================= */
@@ -436,6 +437,7 @@
 {% endblock content %}
 
 {% block extra_js %}
+    {{ block.super }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const tabRadios = document.querySelectorAll('input[name="temple-tabs"]');
