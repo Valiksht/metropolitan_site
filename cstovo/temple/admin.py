@@ -3,7 +3,6 @@ from django.utils.html import format_html, mark_safe
 
 from .models import (
     Temple,
-    Status,
     Clergy,
     TempleClergy,
     Deal,
@@ -80,10 +79,6 @@ class ClergyAdmin(admin.ModelAdmin):
     image_preview.short_description = 'Превью изображения'
 
 
-@admin.register(Status)
-class StatusAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    extra = 1
 
 
 @admin.register(Temple)

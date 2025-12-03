@@ -48,7 +48,7 @@
           display: block;
           width: 100%;
           height: 100%; 
-          max-height: 70vh;
+          max-height: 53vh;
           min-height: 40vh !important;
           object-fit: cover;  
           object-position: center bottom; 
@@ -64,13 +64,7 @@
             z-index: 1;
             pointer-events: none;
         }
-        .hero-bg-overlay {
-  position: absolute;
-  inset: 0;                    /* растягивается по высоте секции = высоте картинки */
-  background: rgba(0,0,0,0.45);
-  z-index: 1;
-  pointer-events: none;
-}
+
 
   /* Полупрозрачное затемнение поверх изображения */
   .hero-bg-overlay {
@@ -82,29 +76,19 @@
   }
 
         /* Hero: обёртка текста поверх затемнения */
-        .hero-content {
+
+            .hero-content {
               position: absolute;
               z-index: 2;
-              top: 50%;
-              left: clamp(16px, 6vw, 72px);      /* отступ слева */
-              right: clamp(16px, 6vw, 72px);     /* чтобы текст не прилипал к правому краю */
-              transform: translateY(-50%);       /* вертикальный центр относительно высоты картинки */
-              text-align: left;                  /* выравнивание строк */
+              top: 40%;
+              left: clamp(16px, 6vw, 72px); /* отступ слева */
+              right: clamp(16px, 6vw, 72px);  /* чтобы текст не прилипал к правому краю */
+              transform: translateY(-50%);  /* вертикальный центр относительно высоты картинки */
               max-width: min(960px, 100%);
+              text-align: left;   /* выравнивание строк */
               color: #fff;
+              margin-top: 45px;
             }
-            .hero-content {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: clamp(16px, 6vw, 72px);
-  right: clamp(16px, 6vw, 72px);
-  transform: translateY(-50%);
-  max-width: min(960px, 100%);
-  text-align: left;
-  color: #fff;
-  margin-top: 45px;
-}
 
 
 
@@ -141,151 +125,143 @@
         /* === Стили для карточек новостей                                       === */
         /* ========================================================================= */
 
-        .news-list-page-container {
-            max-width: 960px; /* Ограничиваем общую ширину контента для читабельности */
-            margin: 2rem auto;
-            padding: 0 1.5rem; /* Добавляем горизонтальные отступы для маленьких экранов */
-        }
+    .news-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
 
-        .news-list-page-container h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 3rem;
-            font-size: 2.5rem;
-        }
+    /* Базовая карточка (вид Список) */
+    .news-card-link {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform .2s, box-shadow .2s;
+      padding: 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .news-card-link:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-        /* Контейнер для новостей */
-        .news-cards-list { /* ИЗМЕНЕНО: был .news-cards-container в HTML */
-            display: flex;
-            flex-direction: column;
-            gap: 2.5rem; /* Отступ между карточками новостей */
-        }
+    .news-image-wrapper {
+      flex-shrink: 0;
+      width: 250px;
+      height: 280px;
+      margin-right: 1.5rem;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    .news-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* текущая логика для вида "Список" */
+      display: block;
+    }
 
-        /* Обертка для всей карточки, чтобы она стала кликабельной ссылкой */
-        .news-card-link { /* ДОБАВЛЕНО */
-            display: flex; /* Делаем ссылку флекс-контейнером, как раньше была карточка */
-            flex-direction: row; /* Изображение слева, текст справа */
-            align-items: flex-start; /* Выравнивание элементов по верху */
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            padding: 1.5rem; /* Внутренние отступы для карточки */
-            width: 100%; /* Занимает всю доступную ширину родителя */
-            box-sizing: border-box; /* padding не увеличивает ширину */
-            text-decoration: none; /* Убираем подчеркивание у ссылки */
-            color: inherit; /* Наследуем цвет текста, чтобы он не был синим */
-            cursor: pointer; /* ДОБАВЛЕНО: курсор-указатель */
-        }
+    .news-card-content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .news-card-content h2 {
+      color: var(--title-color);
+      font-size: 1.6rem;
+      margin: 0 0 .5rem 0;
+      line-height: 1.3;
+    }
+    .news-date {
+      font-size: .95rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+      opacity: .75;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .photo-info { display: inline-flex; align-items: center; gap: 6px; color: #888; font-size: .9rem; }
+    .camera-icon { width: 18px; height: 18px; color: var(--secondary-color); }
+    .count-number { font-size: 1.1rem; color: var(--secondary-color); }
 
+    .news-card-content p {
+      font-size: 1.1rem;
+      color: var(--secondary-color);
+      margin: 0;
+    }
 
-        .news-card-link:hover { /* ИЗМЕНЕНО: теперь hover применяется к ссылке */
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+    .no-news {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: var(--secondary-color);
+    }
 
-        .news-image-wrapper {
-            flex-shrink: 0; /* Изображение не будет сжиматься */
-            width: 250px; /* Фиксированная ширина для изображения */
-            height: 280px; /* Фиксированная высота */
-            margin-right: 1.5rem;
-            border-radius: 6px;
-            overflow: hidden; /* Обрезает изображение, если оно выходит за рамки */
-        }
+    /* —— РЕЖИМ КВАДРАТНЫХ КАРТОЧЕК ——————————————————————————————— */
+    .view-grid .news-cards-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
 
-        .news-card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Заполняет контейнер, сохраняя пропорции */
-            display: block;
-        }
+    .view-grid .news-card-link {
+      position: relative;
+      padding: 0;
+      aspect-ratio: 1 / 1; /* квадрат */
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-        .news-card-content {
-            flex-grow: 1; /* Контент займет все оставшееся пространство */
-            display: flex;
-            flex-direction: column;
-        }
+    .view-grid .news-image-wrapper {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
 
-        .news-card-content h2 {
-            color: var(--title-color); /* Используем переменную для цвета заголовка */
-            font-size: 1.8rem;
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
+    .view-grid .news-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* картинка заполняет квадрат, обрезка по бокам при необходимости */
+      display: block;
+    }
 
-        .news-date {
-            font-size: 0.9rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            opacity: 0.7;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
+    .view-grid .news-card-content {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: .75rem 1rem;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.7) 90%);
+      color: #fff;
+    }
+    .view-grid .news-card-content h2 {
+      margin: 0;
+      font-size: 1rem;
+      color: #fff;
+    }
 
-        .news-card-content p {
-            font-size: 1.4rem;
-            color: var(--secondary-color);
-            margin-bottom: 1.5rem; /* ИЗМЕНЕНО: уменьшил margin-bottom, так как кнопки "Читать далее" нет */
-            flex-grow: 1; /* Описание может растягиваться */
-        }
-
-
-        .no-news {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 1.2rem;
-            color: var(--secondary-color);
-        }
-
-        .photo-info {
-            display: inline-flex;
-            align-items: center;
-            color: #888;
-            font-size: 0.9rem;
-            line-height: 1;
-            font-weight: normal;
-            margin-left: 8px; /* Отступ от даты */
-        }
-
-        .camera-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
-            color: var(--secondary-color);
-        }
-
-        .count-number {
-            vertical-align: middle;
-            font-size: 1.4rem;
-            color: var(--secondary-color);
-        }
-        .no-news {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 1.2rem;
-            color: var(--secondary-color);
-        }
-        .all-news-button-wrapper {
-            margin-top: 3rem;
-            text-align: center;
-        }
-        .all-news-button {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            font-size: 1.2rem;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color var(--transition-speed) ease;
-        }
-        .all-news-button:hover {
-            background-color: var(--hover-color);
-            color: var(--text-color);
-        }
+        @media (max-width: 768px) {
+      .news-header h1 { font-size: 1.8rem; }
+      .news-card-link { flex-direction: column; align-items: center; padding: 1rem; }
+      .news-image-wrapper { width: 100%; height: 200px; margin-right: 0; margin-bottom: 1rem; }
+      .news-card-image { object-fit: contain; }
+      .news-card-content h2 { font-size: 1.3rem; }
+    }
 
 
         @media (max-width: 480px) {
@@ -306,7 +282,7 @@
     <!-- Hero: текстовый контент поверх изображения -->
     <div class="hero-content">
       <h1>КСТОВСКОЕ<wbr> БЛАГОЧИНИЕ</h1>
-      <p>Русская Православная Церковь<wbr> Московский патриархат<wbr> Нижегородская Епархия</p>
+      {% comment %} <p>Нижегородская Епархия<wbr> Московский Патриархат<wbr> Русская Православная Церковь</p> {% endcomment %}
     </div>
   </section>
 {% endblock %}

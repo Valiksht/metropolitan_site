@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block extra_css %}
+      {{ block.super }}
+      /* Контейнер результатов */
+    .search-results {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    /* Заголовки и сводка */
+    .results-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+    }
+    
+    .search-summary {
+      color: #555;
+      margin: 0 0 1rem 0;
+    }
+    
+    .no-results {
+      color: #444;
+      font-style: italic;
+    }
+    
+    /* Секции */
+    .results-section + .results-section {
+      margin-top: 2rem;
+    }
+    
+    .section-title {
+      margin: 0 0 0.75rem 0;
+      font-size: 2rem;
+      color: var(--primary-color);
+    }
+    
+    /* Список результатов */
+    .results-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .results-list li {
+      padding: 0.75rem 0;
+      font-size: 1.2rem;
+      border-bottom: 1.5px solid #eee;
+    }
+    
+    /* Ссылки: чёрные по умолчанию, подчёркивание по hover/focus */
+    .results-list a {
+      color: #000;
+      text-decoration: none;
+    }
+    
+    .results-list a:hover,
+    .results-list a:focus {
+      text-decoration: underline;
+    }
+{% endblock %}
+{% block content %}
+  <div class="search-results">
+    <h1 class="results-title">Результаты поиска</h1>
+    {% if q %}
+      <p class="search-summary">Запрос: «{{ q }}»{% if total %}. Найдено: {{ total }}{% endif %}</p>
+    {% endif %}
+    {% if total %}
+      {% for section in sections %}
+        {% if section.items %}
+          <section class="results-section">
+            <h2 class="section-title">{{ section.label }}</h2>
+            <ul class="results-list">
+              {% for obj in section.items %}
+                <li>
+                  <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </section>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="no-results">Ничего не найдено.</p>
+    {% endif %}
+  </div>
+{% endblock %}

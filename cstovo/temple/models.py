@@ -7,32 +7,9 @@ from django.urls import reverse
 from .serves import compress_image
 
 
-class Deal(models.Model):
-    stream = models.CharField(
-        max_length=255, verbose_name='Направление деятельнсти'
-    )
-    short_stream = models.CharField(
-        max_length=255,
-        default='Деятельность',
-        verbose_name='Краткое названиенаправление деятельнсти',
-    )
-    image = models.ImageField(
-        upload_to='deal_images',
-        null=True,
-        blank=True,
-        verbose_name='Изображение',
-    )
-    description = models.TextField(verbose_name='Описание')
-
-    class Meta:
-        verbose_name = 'Деятольеность'
-        verbose_name_plural = 'Деятельность'
-
-    def __str__(self):
-        return self.stream
-
-
 class Clergy(models.Model):
+    """Модель священнослужителей"""
+
     CLERGY_RANK = (
         ('deacon', 'Дьякон'),
         ('priest', 'Иерей'),
@@ -84,7 +61,7 @@ class Clergy(models.Model):
         return f'{self.rank_display} {self.first_name} {self.last_name}'
 
     def get_absolute_url(self):
-        return reverse('temple:duhovenstvo_detail', args=[str(self.id)])
+        return reverse('temple:clergy_detail', args=[str(self.id)])
 
     def save(self, *args, **kwargs):
         image_changed = False
@@ -103,27 +80,76 @@ class Clergy(models.Model):
             type(self).objects.filter(pk=self.pk).update(
                 small_image=self.small_image.name
             )
+     
 
+class Deal(models.Model):
+    """Модель направлений деятельности"""
 
-class Status(models.Model):
-    name = models.CharField(
-        max_length=255,
-        default='Работает',
-        unique=True,
-        verbose_name='Статус храма',
+    stream = models.CharField(
+        max_length=255, verbose_name='Направление деятельнсти'
     )
-    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+    short_stream = models.CharField(
+        max_length=255,
+        default='Деятельность',
+        verbose_name='Краткое названиенаправление деятельнсти',
+    )
+    image = models.ImageField(
+        upload_to='deal_images',
+        null=True,
+        blank=True,
+        verbose_name='Изображение',
+    )
+    description = models.TextField(verbose_name='Описание')
+    curator = models.ForeignKey(
+        Clergy,
+        on_delete=models.CASCADE,
+        related_name='deals',
+        verbose_name='Куратор из духовенства',
+        null=True,
+        blank=True,
+    )
+    sv_curator_name = models.CharField(
+        max_length=255,
+        default='Куратор',
+        verbose_name=' Фамилия и Имя светского куратора',
+    )
+    sv_curator_post = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='Должность светского куратора',
+    )
+    sv_curator_image = models.ImageField(
+        upload_to='curator_images',
+        null=True,
+        blank=True,
+        verbose_name='Изображение светского куратора',
+    )
+    sv_curator_url = models.URLField(
+        max_length=255,
+        verbose_name='Ссылка на сайт или страницу светского куратора',
+        blank=True,
+        null=True,
+    )
 
     class Meta:
-        verbose_name = 'Статус храма'
-        verbose_name_plural = 'Статусы храма'
-        ordering = ('order',)
+        verbose_name = 'Деятольеность'
+        verbose_name_plural = 'Деятельность'
 
     def __str__(self):
-        return self.name
+        return self.stream
 
 
 class Temple(models.Model):
+    """Модель храмов"""
+
+    STATUS_TEMPLE = (
+        ('active', 'Действующие'),
+        ('restoring', 'Восстанавливающиеся'),
+        ('under_construction', 'Строящиеся'),
+        ('destroyed', 'Разрушенные'),
+    )
+
     name = models.CharField(max_length=255, verbose_name='Название храма')
     description = models.TextField(verbose_name='История')
     image = models.ImageField(
@@ -160,12 +186,10 @@ class Temple(models.Model):
         related_name='temple',
         verbose_name='Свещенослужители',
     )
-    status = models.ForeignKey(
-        Status,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='temple',
+    status = models.CharField(
+        max_length=50,
+        choices=STATUS_TEMPLE,
+        default='active',
         verbose_name='Статус',
     )
     shcool = models.ForeignKey(
@@ -208,6 +232,8 @@ class Temple(models.Model):
 
 
 class TempleClergy(models.Model):
+    """Модель связи храма и священнослужителя"""
+
     temple = models.ForeignKey(
         Temple, on_delete=models.CASCADE, related_name='temple_clergy'
     )
@@ -224,6 +250,8 @@ class TempleClergy(models.Model):
 
 
 class Secret(models.Model):
+    """Модель таинств"""
+
     name = models.CharField(max_length=255, verbose_name='Название таинства')
     full_name = models.CharField(
         max_length=255, verbose_name='Полное название таинства'
@@ -245,6 +273,8 @@ class Secret(models.Model):
 
 
 class GodServes(models.Model):
+    """Модель богослужения"""
+
     name = models.CharField(
         max_length=255, verbose_name='Название богослужения'
     )
@@ -264,6 +294,8 @@ class GodServes(models.Model):
 
 
 class Contact(models.Model):
+    """Модель контактов"""
+
     name = models.CharField(max_length=255, verbose_name='Имя')
     phone = models.CharField(max_length=50, verbose_name='Телефон')
     email = models.EmailField(verbose_name='Email')
@@ -284,6 +316,8 @@ class Contact(models.Model):
 
 
 class News(models.Model):
+    """Модель новостей"""
+
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     image = models.ImageField(
@@ -343,6 +377,8 @@ class News(models.Model):
 
 
 class NewsImage(models.Model):
+    """Модель дополнительных изображений новостей"""
+
     news = models.ForeignKey(
         News, on_delete=models.CASCADE, related_name='images'
     )
@@ -359,6 +395,8 @@ class NewsImage(models.Model):
 
 
 class BaseImage(models.Model):
+    """Модель базовых изображений"""
+
     TYPE_IMAGE = (
         ('main', 'Главное изображение'),
         ('logo', 'Логотип'),

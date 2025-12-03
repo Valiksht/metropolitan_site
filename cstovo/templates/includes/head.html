@@ -2,13 +2,15 @@
 {% load static %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+<link rel="icon" href="{% static 'favicon.png' %}" type="image/png">
 <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
-<title>Адаптивный Заголовок с Навигацией</title>
+<title>Кстовское благочиние</title>
 <style>
     :root {
-        --primary-color: #314a68ff; /* Темно-синий, для заголовков, фона хедера/футера */
+        --primary-color: #274468ff; /* Темно-синий, для заголовков, фона хедера/футера */
         --secondary-color: #292929ff; /* Серый, для текста */
-        --accent-color: #7aa0c4ff; /* Оранжевый, для акцентов и кнопок */
+        --accent-color: #bdd5e7ff; /* Оранжевый, для акцентов и кнопок */
         --title-color: #1a1a1aff;
         --text-color: #ffffffff;
         --text-color-light: #ffffff; /* Белый, для текста на темном фоне */
@@ -217,8 +219,90 @@ header .has-dropdown.align-right > .dropdown-menu {
   left: auto;
   right: 0;
 }
+header .icon-btn {
+  color: #fff;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+}
+
+
+
+header {
+  flex-wrap: wrap; /* уже было в вашем коде */
+}
+/* 2) Строка поиска занимает всю ширину и идет третьим элементом */
+header .search-bar {
+  display: none;
+  flex: 0 0 100%;
+  width: 100%;
+  order: 3;
+  border-top: 1px solid #eee;
+  padding: 12px;
+  background: transparent;
+}
+header .search-bar.is-open {
+  display: block;             /* показываем при .is-open */
+}
+/* 3) Контейнер формы — центрируем и ограничиваем ширину (кадр для компонента) */
+header .search-form {
+  max-width: 720px;   /* можно увеличить/уменьшить по желанию */
+  margin: 0 auto;
+}
+/* 4) СТИЛИ КОМПОНЕНТА (из вашего референса), локализованы под header */
+header .input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.5rem;
+  width: 100%;
+  max-width: 35rem;            /* узкий аккуратный инпут внутри рамки формы */
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 0.5rem;
+  padding: 0.35rem;
+  margin: 0 auto;              /* центрируем сам блок инпута */
+}
+header .input-container input[type="search"] {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  padding: 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  border-radius: 0.375rem;
+  min-width: 0;
+}
+header .search-btn {
+  width: auto;
+  height: 100%;
+  border-radius: 0.35rem;
+  background-color: gray;
+  opacity: 0.5;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  pointer-events: none;
+  transition: all 0.15s ease;
+}
+/* Активируем кнопку, когда поле не пустое */
+header .input-container input[type="search"]:not(:placeholder-shown) + .search-btn {
+  background-color: var(--primary-color);
+  opacity: 5;
+  pointer-events: auto;
+}
+
+.search-toggle-mobile { display: none; }
+
 /* === Сценарий 2: до 992px — лого в две строки, меню «пополам» в две строки + тонкая линия === */
-@media (max-width: 1210px) {
+@media (max-width: 1400px) {
   /* ВАЖНО: принудительно показываем меню, даже если где-то было display: none */
   header .nav-menu {
     display: grid !important;
@@ -264,7 +348,7 @@ header .has-dropdown.align-right > .dropdown-menu {
   header .dropdown-menu { min-width: 360px; }
 }
 /* === Сценарий 3: до ~720px — лого снова в одну строку, справа бургер, меню off-canvas === */
-@media (max-width: 890px) {
+@media (max-width: 1050px) {
     header { position: relative; }
     
     header .logo {
@@ -328,6 +412,19 @@ header .has-dropdown.align-right > .dropdown-menu {
     text-decoration: underline;
     outline: none;
   }
+
+  header .nav-menu li.search-item { display: none; }
+  .search-toggle-mobile {
+    display: flex;
+    position: absolute;
+    top: 8px;
+    right: 56px; /* слева от бургера (burger right:12px, ширина ~30px) */
+    z-index: 1000;
+  }
+  header .input-container {
+    max-width: 100%;
+  }
+
 }
 /* Доступность */
 header .hamburger-menu:focus-visible {
@@ -339,6 +436,7 @@ header .nav-menu li a:focus-visible {
   outline-offset: 3px;
   border-radius: 3px;
 }
+
         
     /* Basic content for demonstration */
     main {
@@ -367,7 +465,7 @@ header .nav-menu li a:focus-visible {
     display: flex;
     flex-wrap: wrap; /* Позволяет секциям переноситься на новую строку на маленьких экранах */
     justify-content: space-between;
-    gap: 2rem; /* Отступ между колонками */
+    gap: 0.6rem; /* Отступ между колонками */
     }
     .footer-section {
     flex: 1; /* Каждая секция занимает равное пространство */
@@ -376,7 +474,7 @@ header .nav-menu li a:focus-visible {
     .footer-section h3 {
     color: var(--accent-color); /* Акцентный цвет для заголовков */
     margin-bottom: 1rem;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     }
     .footer-section p,
     .footer-section ul {
@@ -385,7 +483,7 @@ header .nav-menu li a:focus-visible {
     list-style: none; /* Убираем маркеры списка */
     }
     .footer-section ul li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     }
     .footer-section a {
     color: var(--text-color);
@@ -394,13 +492,13 @@ header .nav-menu li a:focus-visible {
     }
     .footer-section a:hover,
     .footer-section a:focus {
-    color: var(--accent-color);
+    color: var(--text-color);
     text-decoration: underline;
     }
     .footer-bottom {
     text-align: center;
     margin-top: 3rem;
-    padding-top: 1.5rem;
+    padding-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1); /* Разделитель */
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.7);
@@ -412,7 +510,7 @@ header .nav-menu li a:focus-visible {
     }
     .footer-bottom a:hover,
     .footer-bottom a:focus {
-    color: var(--accent-color);
+    color: var(--text-color);
     text-decoration: underline;
     }
     /* Адаптивность для мобильных устройств */
@@ -425,7 +523,7 @@ header .nav-menu li a:focus-visible {
     }
     .footer-container {
         flex-direction: column; /* Колонки выстраиваются вертикально */
-        gap: 2rem;
+        gap: 0.5rem;
     }
     .footer-section {
         min-width: unset; /* Отменяем минимальную ширину */
@@ -437,7 +535,7 @@ header .nav-menu li a:focus-visible {
         align-items: center; /* Центрируем ссылки */
     }
     .footer-bottom {
-        margin-top: 2rem;
+        margin-top: 1rem;
         padding-top: 1rem;
     }
     }

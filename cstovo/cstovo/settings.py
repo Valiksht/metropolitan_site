@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'django_cleanup',
     'temple.apps.TempleConfig',
     'core.apps.CoreConfig',
+    'backups.apps.BackupsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dbbackup'
 ]
 
 MIDDLEWARE = [
@@ -144,3 +146,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {
+     'location': os.path.join(BASE_DIR, 'tmp_backups'),
+     }
+DBBACKUP_MEDIA_PATH = 'media'  # для mediabackup
+DBBACKUP_COMPRESS = True

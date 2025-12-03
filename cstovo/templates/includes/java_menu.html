@@ -163,4 +163,28 @@
         });
 
     }); // <--- ОБЯЗАТЕЛЬНО ЗАКРЫВАЮЩИЙ СКОБКА И ТОЧКА С ЗАПЯТОЙ ДЛЯ ГЛАВНОГО DOMContentLoaded
+(function () {
+  const bar = document.getElementById('search-bar');
+  const desktopBtn = document.getElementById('search-toggle');
+  const mobileBtn = document.getElementById('search-toggle-mobile');
+
+  function toggleBar(btn) {
+    if (!bar) return;
+
+    // Переключаем класс is-open вместо атрибута hidden
+    const isOpen = bar.classList.contains('is-open');
+    if (isOpen) {
+      bar.classList.remove('is-open');
+      btn?.setAttribute('aria-expanded', 'false');
+    } else {
+      bar.classList.add('is-open');
+      btn?.setAttribute('aria-expanded', 'true');
+      const input = bar.querySelector('input[name="q"]');
+      setTimeout(() => input?.focus(), 0);
+    }
+  }
+
+  desktopBtn?.addEventListener('click', () => toggleBar(desktopBtn));
+  mobileBtn?.addEventListener('click', () => toggleBar(mobileBtn));
+})();
 </script>

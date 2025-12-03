@@ -38,7 +38,7 @@
   justify-content: center;
   height: 54px;
   padding: 0 15px;             /* Динамичная ширина */
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 400;
   border-radius: 99px;
   cursor: pointer;
@@ -164,31 +164,31 @@
     <h1>{{ title }}</h1>
 
 <div class="status-filters-container">
-  <form id="filter-form" method="GET" action="{% url 'temple:temple' %}">
-    <div class="filter-tabs">
-      <input
-        type="radio"
-        id="status-all"
-        name="status"
-        value="all"
-        {% if selected_status_name == 'all' %}checked{% endif %}
-        onchange="this.form.submit()"
-      >
-      <label for="status-all">Все храмы</label>
-      {% for status in all_statuses %}
+    <form id="filter-form" method="GET" action="{% url 'temple:temple' %}">
+      <div class="filter-tabs">
         <input
           type="radio"
-          id="status-{{ status.pk }}"
+          id="status-all"
           name="status"
-          value="{{ status.pk }}"
-          {% if selected_status_name|default:'all' == status.pk|stringformat:'s' %}checked{% endif %}
+          value="all"
+          {% if selected_status == 'all' %}checked{% endif %}
           onchange="this.form.submit()"
         >
-        <label for="status-{{ status.pk }}">{{ status.name }}</label>
-      {% endfor %}
-      <span class="glider"></span>
-    </div>
-  </form>
+        <label for="status-all">Все храмы</label>
+        {% for value, label in status_choices %}
+          <input
+            type="radio"
+            id="status-{{ value }}"
+            name="status"
+            value="{{ value }}"
+            {% if selected_status == value %}checked{% endif %}
+            onchange="this.form.submit()"
+          >
+          <label for="status-{{ value }}">{{ label }}</label>
+        {% endfor %}
+        <span class="glider"></span>
+      </div>
+    </form>
 </div>
 
     <div class="cards-grid-container">

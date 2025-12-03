@@ -1,14 +1,20 @@
 <header class="{% if request.resolver_match.url_name == 'homepage' %}is-home{% endif %}">
     <a href="{% url 'temple:homepage' %}" class="logo">
-        РУССКАЯ ПРАВОСЛАВНАЯ ЦЕРКОВЬ<span class="logo-br" aria-hidden="true"></span> 
-        НИЖЕГОРОДСКАЯ МИТРОПОЛИЯ<span class="logo-br" aria-hidden="true"></span>
-        НИЖЕГОРОДСКАЯ ЕПАРХИЯ</a>
+        НИЖЕГОРОДСКАЯ ЕПАРХИЯ<span class="logo-br" aria-hidden="true"></span> 
+        МОСКОВСКИЙ ПАТРИАРХАТ<span class="logo-br" aria-hidden="true"></span>
+        РУССКАЯ ПРАВОСЛАВНАЯ ЦЕРКОВЬ</a>
     <nav role="navigation" aria-label="Основная навигация">
         <button class="hamburger-menu" aria-label="Открыть или закрыть меню навигации" aria-expanded="false" aria-controls="main-nav-menu">
             <span></span>
             <span></span>
             <span></span>
         </button>
+        <button id="search-toggle-mobile" class="icon-btn search-toggle-mobile" aria-expanded="false" aria-controls="search-bar" title="Поиск">
+           <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+             <circle cx="11" cy="11" r="7" stroke="currentColor" fill="none" stroke-width="3"/>
+             <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="3"/>
+           </svg>
+         </button>
         <ul class="nav-menu" id="main-nav-menu">
             {% comment %} <li><a href="{% url 'temple:homepage' %}">Главная</a></li> {% endcomment %}
             <li><a href="{% url 'temple:news' %}">Новости</a></li>
@@ -38,6 +44,40 @@
             </li>
             <li><a href="{% url 'temple:godserves' %}">Богослужения</a></li>
             <li><a href="{% url 'temple:contact' %}">Контакты</a></li>
-        </ul>
-    </nav>
+
+            <li class="search-item">
+              <button id="search-toggle" class="icon-btn" aria-expanded="false" aria-controls="search-bar" title="Поиск">
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" fill="none" stroke-width="3"/>
+                  <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="3"/>
+                </svg>
+              </button>
+            </li>
+          </nav>
+      </ul>
+  <!-- Поисковая строка ОТДЕЛЬНОЙ строкой под навигацией -->
+<div class="search-bar" id="search-bar">
+  <form class="search-form" action="/search/" method="get" role="search">
+    <div class="input-container">
+      
+      <input
+        type="search"
+        name="q"
+        id="site-search"
+        placeholder="Поиск по сайту…"
+        aria-label="Поиск по сайту"
+      />
+      <button class="search-btn" type="submit" >Поиск</button>
+    </div>
+  </form>
+</div>
 </header>
+
+<style>
+  .icon-btn { background: none; border: 0; cursor: pointer; padding: 6px; }
+  .search-bar { border-top: 5px solid #eee; padding: 12px; background: #fafafa; }
+  .search-form { display: flex; gap: 8px; align-items: center; max-width: 720px; margin: 0 auto; }
+  .search-submit { padding: 8px 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+  .search-input { flex: 1; padding: 8px 10px; border: 1px solid #ccc; }
+  /* Вариант “кнопка в начале строки” — сделано выше: button слева, input справа */
+</style>

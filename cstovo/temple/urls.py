@@ -25,4 +25,5 @@ urlpatterns = [
     path('secret/<int:pk>/', views.SecretDetailView.as_view(), name='secret_detail'),
     path('godserves/', views.GodServesView.as_view(), name='godserves'),
     path('contact/', views.ContactView.as_view(), name='contact'),
+    path('search/', views.unified_search, name='search'),
 ]

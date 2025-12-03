@@ -9,19 +9,24 @@
             <h3>Навигация</h3>
             <ul>
                 <li><a href="{% url 'temple:homepage' %}">Главная</a></li>
+                <li><a href="{% url 'temple:news' %}">Новости</a></li>
+                <li><a href="{% url 'temple:clergy' %}">Духовенство</a></li>
+                <li><a href="{% url 'temple:temple' %}">Храмы</a></li>
+                <li><a href="{% url 'temple:deal' %}">Деятельность</a></li>
+                <li><a href="{% url 'temple:secret' %}">Таинства</a></li>
+                <li><a href="{% url 'temple:godserves' %}">Богослужения</a></li>
                 <li><a href="{% url 'temple:contact' %}">Контакты</a></li>
             </ul>
         </div>
         <div class="footer-section footer-social">
             <h3>Мы в соцсетях</h3>
             <ul>
-                <li><a href="#" target="_blank" aria-label="Наша страница ВКонтакте">ВКонтакте</a></li>
-                <!-- Добавьте ссылки на другие социальные сети -->
+                <li><a href="https://vk.com/kstovoblago" target="_blank" aria-label="Наша страница ВКонтакте">ВКонтакте</a></li>
             </ul>
         </div>
     </div>
     <div class="footer-bottom">
         <p>&copy; {% now "Y" %} Кстовская митрополия. Все права защищены.</p>
-        <p>Разработка и поддержка: <a href="https://yourwebsite.com" target="_blank" rel="noopener noreferrer">Ваше Имя / Название Компании</a></p>
+        <p>Разработка и поддержка: <a href="https://vk.com/valikpro" target="_blank" rel="noopener noreferrer">Рубанов Валентин / rubanov.valentin@ya.ru</a></p>
     </div>
 </footer>
