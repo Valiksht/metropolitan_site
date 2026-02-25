@@ -20,7 +20,7 @@
             <li><a href="{% url 'temple:news' %}">Новости</a></li>
             <li><a href="{% url 'temple:clergy' %}">Духовенство</a></li>
             <li><a href="{% url 'temple:temple' %}">Храмы</a></li>
-            <li class="has-dropdown">
+            {% comment %} <li class="has-dropdown">
                 <a href="{% url 'temple:deal' %}">Деятельность<span class="dropdown-arrow"></span></a>
                 <ul class="dropdown-menu">
                     <li><a href="{% url 'temple:deal' %}">Все направления</a></li>
@@ -41,6 +41,34 @@
                         <li><a href="#">Таинства не найдены</a></li>
                     {% endfor %}
                 </ul>
+            </li> {% endcomment %}
+            <!-- Деятельность -->
+            <li class="has-dropdown">
+              <a href="{% url 'temple:deal' %}" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                Деятельность<span class="dropdown-arrow"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url 'temple:deal' %}">Все направления</a></li>
+                {% for deal_item in all_deal %}
+                  <li><a href="{% url 'temple:deal_detail' pk=deal_item.pk %}">{{ deal_item.short_stream }}</a></li>
+                {% empty %}
+                  <li><a href="#">Деятельность не найдена</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+            <!-- Таинства -->
+            <li class="has-dropdown">
+              <a href="{% url 'temple:secret' %}" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                Таинства<span class="dropdown-arrow"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url 'temple:secret' %}">Все таинства</a></li>
+                {% for secret_item in all_secrets %}
+                  <li><a href="{% url 'temple:secret_detail' pk=secret_item.pk %}">{{ secret_item.name }}</a></li>
+                {% empty %}
+                  <li><a href="#">Таинства не найдены</a></li>
+                {% endfor %}
+              </ul>
             </li>
             <li><a href="{% url 'temple:godserves' %}">Богослужения</a></li>
             <li><a href="{% url 'temple:contact' %}">Контакты</a></li>
@@ -53,8 +81,9 @@
                 </svg>
               </button>
             </li>
-          </nav>
+          
       </ul>
+      </nav>
   <!-- Поисковая строка ОТДЕЛЬНОЙ строкой под навигацией -->
 <div class="search-bar" id="search-bar">
   <form class="search-form" action="/search/" method="get" role="search">

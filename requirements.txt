@@ -1,5 +1,11 @@
+asgiref==3.10.0
 Django==5.2.7
-Pillow==11.3.0
 django-admin-sortable2==2.2.8
-tzdata==2025.2
 django-cleanup==9.0.0
+django-dbbackup==5.0.1
+pillow==11.3.0
+pytz==2025.2
+sqlparse==0.5.3
+typing_extensions==4.15.0
+tzdata==2025.2
+django-ckeditor-5==0.2.18

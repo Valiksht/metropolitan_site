@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %} {# Для {% now %} #}
-{% block title %}{{ news.title }} - Новости Кстовской митрополии{% endblock %}
+{% block title %}{{ news.title }} - Новости Кстовского благочиния{% endblock %}
 {% block extra_css %}
     {{ block.super }} {# Сохраняет стили из родительского extra_css #}
     /* Стили, специфичные для детальной страницы новости */
@@ -257,7 +257,7 @@
     {% endif %}
 
     <div class="news-detail-description">
-        {{ news.description|linebreaks }} {# Преобразует переносы строк в <p> теги #}
+        {{ news.description|default_if_none:''|safe }} {# Преобразует переносы строк в <p> теги #}
     </div>
     <a href="{% url 'temple:news' %}" class="news-detail-back-link">&larr; Ко всем новостям</a>
 </div>

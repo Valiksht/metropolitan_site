@@ -101,6 +101,29 @@
             flex-grow: 1; /* Чтобы кнопки занимали доступное пространство */
             max-width: 25%; /* Ограничиваем ширину, чтобы не растягивались слишком сильно */
             font-size: 1.2rem;
+
+  padding: 12px 15px;      /* ★ Уменьшили padding ★ */
+  cursor: pointer;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  background-color: #f9f9f9;
+  color: #000000ff;
+  transition: all 0.3s ease;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  
+  /* ★ ТОЧНО 4 в строку ★ */
+  flex: 1;                 /* Равная ширина */
+  min-width: 0;            /* Позволяет сжиматься */
+  max-width: none;         /* Убираем ограничение */
+  font-size: 1.1rem;       /* ★ Немного уменьшили шрифт ★ */
+  text-align: center;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+
         }
 
         .tabs-header label:hover {
@@ -347,7 +370,7 @@
             <div id="content-description" class="tab-pane active">
                 <h2>История</h2>
                 {% if temple.description %}
-                    <p>{{ temple.description|linebreaksbr }}</p>
+                    <p>{{ temple.description|default_if_none:''|safe }}</p>
                 {% else %}
                     <p>Подробное описание храма отсутствует.</p>
                 {% endif %}

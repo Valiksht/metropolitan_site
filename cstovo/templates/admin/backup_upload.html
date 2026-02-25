@@ -1,11 +1,14 @@
 {% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
 {% block content %}
   <h1>{{ title }}</h1>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <p><input type="file" name="file" required></p>
+    {# Используйте вашу форму Django для рендеринга полей #}
+    {{ form.as_p }} 
     <p class="help">Загрузите архив/файл бэкапа для объекта со slug: <code>{{ object_slug }}</code>.</p>
     <p><button class="button" type="submit">Загрузить и восстановить</button></p>
   </form>
-  <p><a href="{% url 'admin:%s_%s_changelist' opts.app_label opts.model_name %}">← Назад к списку</a></p>
+  {# ИСПРАВЛЕНИЕ ОШИБКИ ЗДЕСЬ #}
+  <p><a href="{% url opts|admin_urlname:'changelist' %}">← Назад к списку</a></p>
 {% endblock %}

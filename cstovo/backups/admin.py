@@ -1,11 +1,15 @@
 from django.contrib import admin, messages
 from django.urls import path, reverse
 from django.utils.html import format_html
+from django import forms
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
 from .models import BackupLog
 from .services import download_backup, restore_backup
 
+class BackupUploadForm(forms.Form):
+    # 'file' должно соответствовать name='file' в вашем HTML <input type="file">
+    file = forms.FileField(label="Выберите файл бэкапа") 
 
 @admin.register(BackupLog)
 class BackupLogAdmin(admin.ModelAdmin):
@@ -88,11 +92,14 @@ class BackupLogAdmin(admin.ModelAdmin):
                 messages.error(request, f'Ошибка импорта/восстановления: {e}')
             cl = reverse(f'admin:{self.model._meta.app_label}_{self.model._meta.model_name}_changelist')
             return redirect(cl)
+        else:
+            form = BackupUploadForm()
         context = dict(
             self.admin_site.each_context(request),
             opts=self.model._meta,
             object_slug=slug,
             title='Загрузка архива для восстановления',
+            form=form,
         )
         # Простейшая форма без отдельного шаблона — рендерим inline
         return render(request, 'admin/backup_upload.html', context)

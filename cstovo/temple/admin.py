@@ -18,8 +18,8 @@ from .models import (
 class TempleClergyInline(admin.TabularInline):
     model = TempleClergy
     extra = 1
-    verbose_name = ("Священнослужитель")
-    verbose_name_plural = ("Священнослужители")
+    verbose_name = "Священнослужитель"
+    verbose_name_plural = "Священнослужители"
 
 
 @admin.register(Clergy)
@@ -79,8 +79,6 @@ class ClergyAdmin(admin.ModelAdmin):
     image_preview.short_description = 'Превью изображения'
 
 
-
-
 @admin.register(Temple)
 class TempleAdmin(admin.ModelAdmin):
     readonly_fields = ['image_preview']
@@ -94,11 +92,13 @@ class TempleAdmin(admin.ModelAdmin):
         'location',
         'phone',
         'map',
-        'shcool',
         'order',
+        'shcool',
     )
-    list_display = ('name', 'get_people_list')
+    list_display = ('name', 'order')
+    list_editable = ('order',)
     list_filter = ('status',)
+    search_fields = ('name',)
     inlines = (TempleClergyInline,)
 
     def get_people_list(self, obj):

@@ -1,168 +1,162 @@
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // --- 1. Функциональность гамбургер-меню ---
-      const hamburgerMenu = document.querySelector('.hamburger-menu');
-      const navMenu = document.querySelector('.nav-menu');
-      if (hamburgerMenu && navMenu) {
-        // 1.1 «Главная» только для мобилы
-        function ensureMobileHomeItem() {
-          if (window.innerWidth > 720) return;
-          if (!navMenu.querySelector('.mobile-home-item')) {
-            const li = document.createElement('li');
-            li.className = 'mobile-home-item';
-            const a = document.createElement('a');
-            a.href = document.querySelector('a.logo')?.href || '/';
-            a.textContent = 'Главная';
-            li.appendChild(a);
-            navMenu.insertBefore(li, navMenu.firstChild);
-          }
+(function() {
+  // Защита от повторной инициализации (если скрипт случайно подключат дважды)
+  if (window.__MAIN_NAV_INIT__) return;
+  window.__MAIN_NAV_INIT__ = true;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const DESKTOP_BP = 1050; // синхронизирован с CSS
+    const hamburgerMenu = document.querySelector('.hamburger-menu');
+    const navMenu = document.getElementById('main-nav-menu');
+
+    const isDesktop = () => window.innerWidth > DESKTOP_BP;
+
+    function closeAllDropdowns() {
+      if (!navMenu) return;
+      navMenu.querySelectorAll('.has-dropdown.is-open').forEach(li => {
+        li.classList.remove('is-open');
+        const t = li.querySelector('.dropdown-toggle');
+        if (t) t.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    // --- Гамбургер ---
+    if (hamburgerMenu && navMenu) {
+      function ensureMobileHomeItem() {
+        if (window.innerWidth > 720) return;
+        if (!navMenu.querySelector('.mobile-home-item')) {
+          const li = document.createElement('li');
+          li.className = 'mobile-home-item';
+          const a = document.createElement('a');
+          a.href = document.querySelector('a.logo')?.href || '/';
+          a.textContent = 'Главная';
+          li.appendChild(a);
+          navMenu.insertBefore(li, navMenu.firstChild);
         }
-        function removeMobileHomeItem() {
-          const li = navMenu.querySelector('.mobile-home-item');
-          if (li) li.remove();
-        }
-        // 1.2 Переключение меню (без автофокуса на первый пункт)
-        function toggleMenu() {
-          const isOpen = hamburgerMenu.classList.toggle('open');
-          navMenu.classList.toggle('open');
-          hamburgerMenu.setAttribute('aria-expanded', isOpen);
-          if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            ensureMobileHomeItem();
-          } else {
-            document.body.style.overflow = '';
-            hamburgerMenu.focus();
-          }
-        }
-        hamburgerMenu.addEventListener('click', toggleMenu);
-        // 1.3 Делегирование кликов внутри меню (закрываем при клике по ссылке на мобиле)
-        navMenu.addEventListener('click', (e) => {
-          const link = e.target.closest('a');
-          if (!link) return;
-          if (navMenu.classList.contains('open') && window.innerWidth <= 992) {
-            toggleMenu();
-          }
-        });
-        document.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape' && navMenu.classList.contains('open')) {
-            toggleMenu();
-          }
-        });
-        document.addEventListener('click', (event) => {
-          if (navMenu.classList.contains('open') &&
-              !navMenu.contains(event.target) &&
-              !hamburgerMenu.contains(event.target)) {
-            toggleMenu();
-          }
-        });
-        window.addEventListener('resize', () => {
-          if (window.innerWidth > 992 && navMenu.classList.contains('open')) {
-            hamburgerMenu.classList.remove('open');
-            navMenu.classList.remove('open');
-            hamburgerMenu.setAttribute('aria-expanded', 'false');
-            document.body.style.overflow = '';
-          }
-          if (window.innerWidth > 720) {
-            removeMobileHomeItem();
-          }
-        });
       }
 
+      function removeMobileHomeItem() {
+        const li = navMenu.querySelector('.mobile-home-item');
+        if (li) li.remove();
+      }
 
-        // --- 2. Функциональность выпадающего меню (для десктопа) ---
-        const dropdownParents = document.querySelectorAll('.has-dropdown');
+      function toggleMenu() {
+        const isOpen = hamburgerMenu.classList.toggle('open');
+        navMenu.classList.toggle('open');
+        hamburgerMenu.setAttribute('aria-expanded', String(isOpen));
 
-        dropdownParents.forEach(parent => {
-            const dropdownToggle = parent.querySelector('a');
-            const dropdownMenu = parent.querySelector('.dropdown-menu');
+        if (isOpen) {
+          document.body.style.overflow = 'hidden';
+          ensureMobileHomeItem();
+        } else {
+          document.body.style.overflow = '';
+          closeAllDropdowns();
+          hamburgerMenu.focus();
+        }
+      }
 
-            if (dropdownToggle && dropdownMenu) { // Проверяем, существуют ли оба элемента
-                dropdownToggle.addEventListener('click', (event) => {
-                    // ИСПОЛЬЗУЙТЕ СВОЙ ДЕСКТОПНЫЙ БРЕЙКПОЙНТ
-                    if (window.innerWidth > 992) {
-                        event.preventDefault(); // Предотвращаем переход по ссылке сразу
-                        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-                        dropdownToggle.setAttribute('aria-expanded', dropdownMenu.style.display === 'block');
-                        if (dropdownMenu.style.display === 'block') {
-                            const firstDropdownItem = dropdownMenu.querySelector('a');
-                            if (firstDropdownItem) {
-                                firstDropdownItem.focus();
-                            }
-                        }
-                    }
-                });
+      hamburgerMenu.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleMenu();
+      });
 
-                document.addEventListener('click', (event) => {
-                    // ИСПОЛЬЗУЙТЕ СВОЙ ДЕСКТОПНЫЙ БРЕЙКПОЙНТ
-                    if (window.innerWidth > 992 && !parent.contains(event.target)) {
-                        dropdownMenu.style.display = 'none';
-                        dropdownToggle.setAttribute('aria-expanded', 'false');
-                    }
-                });
+      // В моб. меню клики по обычным ссылкам закрывают off-canvas; по родителю подменю — нет
+      navMenu.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const isDropdownToggle = link.classList.contains('dropdown-toggle');
+        if (navMenu.classList.contains('open') && !isDesktop() && !isDropdownToggle) {
+          toggleMenu();
+        }
+      });
 
-                dropdownToggle.addEventListener('keydown', (event) => {
-                    // ИСПОЛЬЗУЙТЕ СВОЙ ДЕСКТОПНЫЙ БРЕЙКПОЙНТ
-                    if (window.innerWidth > 992 && (event.key === 'Enter' || event.key === ' ')) {
-                        event.preventDefault();
-                        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-                        dropdownToggle.setAttribute('aria-expanded', dropdownMenu.style.display === 'block');
-                        if (dropdownMenu.style.display === 'block') {
-                            const firstDropdownItem = dropdownMenu.querySelector('a');
-                            if (firstDropdownItem) {
-                                firstDropdownItem.focus();
-                            }
-                        }
-                    } else if (event.key === 'ArrowDown' && window.innerWidth > 992 && dropdownMenu.style.display === 'block') {
-                        event.preventDefault();
-                        const firstDropdownItem = dropdownMenu.querySelector('a');
-                        if (firstDropdownItem) {
-                            firstDropdownItem.focus();
-                        }
-                    }
-                });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          if (navMenu.classList.contains('open')) toggleMenu();
+          closeAllDropdowns();
+        }
+      });
 
-                dropdownMenu.addEventListener('keydown', (event) => {
-                    // ИСПОЛЬЗУЙТЕ СВОЙ ДЕСКТОПНЫЙ БРЕЙКПОЙНТ
-                    if (event.key === 'Escape' && window.innerWidth > 992) {
-                        event.preventDefault();
-                        dropdownMenu.style.display = 'none';
-                        dropdownToggle.setAttribute('aria-expanded', 'false');
-                        dropdownToggle.focus(); // Вернуть фокус на родительскую ссылку
-                    }
-                });
-            } // Конец функциональности выпадающего меню
-        });
+      // Клик вне off-canvas — закрыть меню
+      document.addEventListener('click', (event) => {
+        if (
+          navMenu.classList.contains('open') &&
+          !navMenu.contains(event.target) &&
+          !hamburgerMenu.contains(event.target)
+        ) {
+          toggleMenu();
+        }
+      });
 
+      window.addEventListener('resize', () => {
+        if (isDesktop() && navMenu.classList.contains('open')) {
+          hamburgerMenu.classList.remove('open');
+          navMenu.classList.remove('open');
+          hamburgerMenu.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+        }
+        if (window.innerWidth > 720) removeMobileHomeItem();
+        closeAllDropdowns();
+      });
+    }
 
-        // --- 3. Функциональность кнопки "Копировать" ---
-        document.querySelectorAll('.copy-button').forEach(button => {
-            button.addEventListener('click', async (event) => {
-                const valueToCopy = event.currentTarget.dataset.value;
-                if (valueToCopy) {
-                    try {
-                        await navigator.clipboard.writeText(valueToCopy);
-                        const originalText = event.currentTarget.textContent;
-                        event.currentTarget.textContent = 'Скопировано!';
-                        event.currentTarget.style.backgroundColor = '#28a745'; // Зеленый цвет успеха
-                        setTimeout(() => {
-                            event.currentTarget.textContent = originalText;
-                            event.currentTarget.style.backgroundColor = ''; // Возвращаем исходный цвет
-                        }, 1500);
-                    } catch (err) {
-                        console.error('Не удалось скопировать текст: ', err);
-                        if (navigator.clipboard === undefined) {
-                            alert('Ваш браузер не поддерживает автоматическое копирование. Пожалуйста, скопируйте вручную: ' + valueToCopy);
-                        } else {
-                            alert('Не удалось скопировать. Возможно, доступ к буферу обмена заблокирован. Пожалуйста, скопируйте вручную: ' + valueToCopy);
-                        }
-                    }
-                } else {
-                    console.warn('Кнопка копирования не имеет атрибута data-value.');
-                }
-            });
-        });
+    // --- Подменю: единая логика (клик — открыть/закрыть) ---
+    if (navMenu) {
+      // Тоггл по клику на родителе
+      navMenu.addEventListener('click', (e) => {
+        const toggle = e.target.closest('.dropdown-toggle');
+        if (!toggle) return;
 
-    }); // <--- ОБЯЗАТЕЛЬНО ЗАКРЫВАЮЩИЙ СКОБКА И ТОЧКА С ЗАПЯТОЙ ДЛЯ ГЛАВНОГО DOMContentLoaded
+        // гарантируем, что это именно родитель подменю
+        const li = toggle.closest('.has-dropdown');
+        if (!li) return;
+
+        e.preventDefault();
+
+        const willOpen = !li.classList.contains('is-open');
+
+        // На десктопе закрываем остальные
+        if (isDesktop()) {
+          navMenu.querySelectorAll('.has-dropdown.is-open').forEach(other => {
+            if (other !== li) {
+              other.classList.remove('is-open');
+              const t = other.querySelector('.dropdown-toggle');
+              if (t) t.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }
+
+        li.classList.toggle('is-open', willOpen);
+        toggle.setAttribute('aria-expanded', String(willOpen));
+      });
+
+      // Клик вне — закрыть подменю (только десктоп)
+      document.addEventListener('click', (e) => {
+        if (!isDesktop()) return;
+        if (!navMenu.contains(e.target)) {
+          closeAllDropdowns();
+        }
+      });
+
+      // Клавиатура
+      navMenu.addEventListener('keydown', (e) => {
+        const toggle = e.target.closest('.dropdown-toggle');
+        if (!toggle) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle.click();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          const li = toggle.closest('.has-dropdown');
+          li?.classList.remove('is-open');
+          toggle.setAttribute('aria-expanded', 'false');
+          toggle.focus();
+        }
+      });
+    }
+  });
+})();
+
 (function () {
   const bar = document.getElementById('search-bar');
   const desktopBtn = document.getElementById('search-toggle');

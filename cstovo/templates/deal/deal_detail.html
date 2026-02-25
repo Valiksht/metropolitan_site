@@ -52,6 +52,32 @@
             margin-left: auto;
             margin-right: auto;
         }
+.deal-detail-description p {
+  margin: 0 0 0.25rem 0 !important;     /* ★ МИНИМАЛЬНЫЙ отступ снизу ★ */
+  padding: 0 !important;
+  text-indent: 2rem !important;        /* ★ АБЗАЦНЫЙ ОТСТУП ★ */
+}
+
+/* Последний параграф без отступа снизу */
+.deal-detail-description p:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+/* Заголовки внутри описания */
+.deal-detail-description h1, 
+.deal-detail-description h2, 
+.deal-detail-description h3 {
+  text-align: center !important;
+  text-indent: 0 !important;
+  margin: 2rem 0 1rem 0 !important;
+}
+
+/* Списки внутри */
+.deal-detail-description ul,
+.deal-detail-description ol {
+  padding-left: 2.5rem !important;
+  margin: 1rem 0 !important;
+}
 
         .back-button {
             display: inline-block;
@@ -165,18 +191,18 @@
         }
         .curator-card-title {
           font-size: 0.95rem;
-          color: var(--secondary-color);
+          color: var(--text-color-dark);
           margin-bottom: 0.25rem;
         }
         .curator-card-name {
-          font-size: 1.1rem;
+          font-size: 1.4rem;
           font-weight: 600;
-          color: var(--text-color);
+          color: var(--text-color-dark);
           margin-bottom: 0.25rem;
         }
         .curator-card-position {
-          font-size: 0.95rem;
-          color: var(--secondary-color);
+          font-size: 1.15rem;
+          color: var(--text-color-dark);
           white-space: pre-line;
         }
         /* Адаптив */
@@ -202,7 +228,7 @@
     {% endif %}
 
     <div class="deal-detail-description">
-        {{ deal.description|linebreaksbr }} {# Преобразует переносы строк в <br> #}
+        {{ deal.description|default_if_none:''|safe }} {# Преобразует переносы строк в <br> #}
     </div>
 
     <a href="{% url 'temple:deal' %}" class="back-button">Вернуться ко всем направлениям</a>
@@ -226,7 +252,7 @@
               <img src="{% static 'img/default_clergy.jpg' %}" alt="{{ deal.curator.get_runk_display }} {{ deal.curator.first_name }} {{ deal.curator.last_name }}">
             {% endif %}
           </div>
-          <div class="curator-card-title">Куратор из духовенства</div>
+          <div class="curator-card-title"></div>
           <div class="curator-card-name">
             {{ deal.curator.get_runk_display }} {{ deal.curator.first_name }} {{ deal.curator.last_name }}
           </div>
@@ -236,27 +262,52 @@
         </a>
       </li>
     {% endif %}
+        {# 1) Куратор из духовенства #}
+    {% if deal.curator_2 %}
+      <li>
+        <a href="{% url 'temple:clergy_detail' deal.curator_2.pk %}"
+           class="curator-card"
+           aria-label="Куратор из духовенства">
+          <div class="curator-card-image-wrapper">
+            {% if deal.curator_2.small_image %}
+              <img src="{{ MEDIA_URL }}{{ deal.curator_2.small_image }}" alt="{{ deal.curator_2.get_runk_display }} {{ deal.curator_2.first_name }} {{ deal.curator_2.last_name }}">
+            {% elif deal.curator.image %}
+              <img src="{{ deal.curator_2.image.url }}" alt="{{ deal.curator_2.get_runk_display }} {{ deal.curator_2.first_name }} {{ deal.curator_2.last_name }}">
+            {% else %}
+              <img src="{% static 'img/default_clergy.jpg' %}" alt="{{ deal.curator.get_runk_display }} {{ deal.curator.first_name }} {{ deal.curator.last_name }}">
+            {% endif %}
+          </div>
+          <div class="curator-card-title"></div>
+          <div class="curator-card-name">
+            {{ deal.curator_2.get_runk_display }} {{ deal.curator_2.first_name }} {{ deal.curator_2.last_name }}
+          </div>
+          {% if deal.curator_2.post %}
+            <div class="curator-card-position">{{ deal.curator_2.post }}</div>
+          {% endif %}
+        </a>
+      </li>
+    {% endif %}
     {# 2) Светский куратор — показываем ТОЛЬКО если есть должность #}
     {% with name=deal.sv_curator_name post=deal.sv_curator_post image=deal.sv_curator_image url=deal.sv_curator_url %}
-      {% if post and post|length > 0 and post != 'Куратор' %}
+      {% if name and name|length > 0 %}
         <li>
           {% if url %}
             <a href="{{ url }}" class="curator-card" target="_blank" rel="noopener" aria-label="Светский куратор">
           {% else %}
             <div class="curator-card" aria-disabled="true" aria-label="Светский куратор">
           {% endif %}
-            <div class="curator-card-image-wrapper">
-              {% if image %}
+          {% if image %}
+            <div class="curator-card-image-wrapper">   
                 <img src="{{ image.url }}" alt="{{ name }}">
-              {% else %}
-                <img src="{% static 'img/default_person.jpg' %}" alt="{{ name }}">
-              {% endif %}
             </div>
-            <div class="curator-card-title">Светский куратор</div>
-            {% if name and name != 'Куратор' %}
+            {% endif %}
+            <div class="curator-card-title"></div>
+            {% if name  %}
               <div class="curator-card-name">{{ name }}</div>
             {% endif %}
+            {% if post  %}
             <div class="curator-card-position">{{ post }}</div>
+            {% endif %}
           {% if url %}
             </a>
           {% else %}

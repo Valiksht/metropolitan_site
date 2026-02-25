@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-&9bqmb19jyr3la$l@d_k(^$fso1in1!3(%il8r@849!664mtbv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.118', '127.0.0.1', '192.168.0.73', 'localhost']
+ALLOWED_HOSTS = ['192.168.1.88', '127.0.0.1', '192.168.0.73', 'localhost']
 
 
 # Application definition
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_ckeditor_5',
     'dbbackup'
 ]
 
@@ -153,3 +154,22 @@ DBBACKUP_STORAGE_OPTIONS = {
      }
 DBBACKUP_MEDIA_PATH = 'media'  # для mediabackup
 DBBACKUP_COMPRESS = True
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': ['bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList', '|', 'link', '|', 'undo', 'redo'],
+        'language': 'ru',
+        'height': 300,
+    },
+    'full': {
+        'toolbar': ['heading', '|', 'bold', 'italic', 'blockQuote', 'insertTable', '|', 'link', 'imageUpload', '|', 'undo', 'redo'],
+        'image': {
+            'toolbar': ['imageTextAlternative'],
+        },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells'],
+        },
+    },
+}
+
+CKEDITOR_5_ALLOWED_CONTENT = True

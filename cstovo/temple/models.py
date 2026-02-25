@@ -3,6 +3,8 @@ import os
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.db.models.functions import Lower
+from django_ckeditor_5.fields import CKEditor5Field
 
 from .serves import compress_image
 
@@ -99,7 +101,7 @@ class Deal(models.Model):
         blank=True,
         verbose_name='Изображение',
     )
-    description = models.TextField(verbose_name='Описание')
+    description = CKEditor5Field(verbose_name='Описание', config_name='default')
     curator = models.ForeignKey(
         Clergy,
         on_delete=models.CASCADE,
@@ -108,10 +110,19 @@ class Deal(models.Model):
         null=True,
         blank=True,
     )
+    curator_2 = models.ForeignKey(
+        Clergy,
+        on_delete=models.CASCADE,
+        related_name='deals_2',
+        verbose_name='Куратор из духовенства 2',
+        null=True,
+        blank=True,
+    )
     sv_curator_name = models.CharField(
         max_length=255,
-        default='Куратор',
-        verbose_name=' Фамилия и Имя светского куратора',
+        blank=True,
+        null=True,
+        verbose_name='Фамилия и Имя светского куратора',
     )
     sv_curator_post = models.CharField(
         max_length=255,
@@ -133,7 +144,7 @@ class Deal(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Деятольеность'
+        verbose_name = 'Деятельность'
         verbose_name_plural = 'Деятельность'
 
     def __str__(self):
@@ -151,7 +162,7 @@ class Temple(models.Model):
     )
 
     name = models.CharField(max_length=255, verbose_name='Название храма')
-    description = models.TextField(verbose_name='История')
+    description = CKEditor5Field(verbose_name='История', null=True, blank=True, config_name='default')
     image = models.ImageField(
         upload_to='temple_images',
         null=True,
@@ -175,7 +186,7 @@ class Temple(models.Model):
         max_length=255, null=True, blank=True, verbose_name='Телефон'
     )
     map = models.TextField(
-        max_length=255,
+        max_length=500,
         null=True,
         blank=True,
         verbose_name='Код карты из конструктора карт',
@@ -202,6 +213,7 @@ class Temple(models.Model):
     )
 
     class Meta:
+        ordering = (Lower('name'),)
         verbose_name = 'Храм'
         verbose_name_plural = 'Храмы'
 
@@ -219,6 +231,13 @@ class Temple(models.Model):
                 image_changed = True
         else:
             image_changed = bool(self.image)
+    #     status_rank = {
+    #         'active': 1,
+    #         'restoring': 2,
+    #         'under_construction': 3,
+    #         'destroyed': 4,
+    #     }
+    #     self.order = status_rank.get(self.status, 5)
         super().save(*args, **kwargs)
 
         if self.image and (image_changed or not self.small_image):
@@ -256,7 +275,7 @@ class Secret(models.Model):
     full_name = models.CharField(
         max_length=255, verbose_name='Полное название таинства'
     )
-    description = models.TextField(verbose_name='Описание таинства')
+    description = CKEditor5Field(verbose_name='Описание', config_name='default')
     image = models.ImageField(
         upload_to='secret_images',
         null=True,
@@ -296,12 +315,12 @@ class GodServes(models.Model):
 class Contact(models.Model):
     """Модель контактов"""
 
-    name = models.CharField(max_length=255, verbose_name='Имя')
-    phone = models.CharField(max_length=50, verbose_name='Телефон')
-    email = models.EmailField(verbose_name='Email')
-    message = models.TextField(null=True, verbose_name='Описание')
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name='Имя')
+    phone = models.CharField(max_length=50, null=True, blank=True, verbose_name='Телефон')
+    email = models.EmailField(null=True, blank=True, verbose_name='Email')
+    message = models.TextField(null=True, blank=True, verbose_name='Описание')
     location = models.TextField(
-        max_length=255,
+        max_length=500,
         null=True,
         blank=True,
         verbose_name='Код карты из конструктора карт',
@@ -312,14 +331,14 @@ class Contact(models.Model):
         verbose_name_plural = 'Контакты'
 
     def __str__(self):
-        return self.name
+        return str(self.pk)
 
 
 class News(models.Model):
     """Модель новостей"""
 
     title = models.CharField(max_length=255, verbose_name='Заголовок')
-    description = models.TextField(verbose_name='Описание')
+    description = CKEditor5Field(verbose_name='Описание', config_name='default')
     image = models.ImageField(
         upload_to='news_images',
         null=True,

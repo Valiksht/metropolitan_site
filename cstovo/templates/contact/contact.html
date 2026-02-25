@@ -231,8 +231,9 @@
         {% for contact in contact_list %}
 
             <div class="contact-card-horizontal">
-
-                <h2>{{ contact.name }}</h2>
+                {% if contact.name %}
+                    <h2>{{ contact.name }}</h2>
+                {% endif %}
 
                 <div class="contact-details">
 

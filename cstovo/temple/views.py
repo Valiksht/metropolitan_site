@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from django.views.generic import DetailView, ListView, TemplateView
+from django.db.models.functions import Lower
 
 from .models import (
     BaseImage,
@@ -97,7 +98,7 @@ class TempleListView(ListView):
     context_object_name = 'temple_list'
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('order', 'name')
+        qs = super().get_queryset().order_by('order', Lower('name'))
         status_value = self.request.GET.get('status', 'all')
         allowed_values = {value for value, _ in Temple.STATUS_TEMPLE}
         if status_value in allowed_values:
