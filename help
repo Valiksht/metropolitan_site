@@ -15,11 +15,12 @@ docker-compose logs -f nginx
 
 # Пересборка (где Dockerfile):
 docker build -t valiksht/cstovo:1.2 .
-docker build -t valiksht/cstovo:1.3 -t valiksht/cstovo:latest .
+docker build -t valiksht/cstovo:1.6 -t valiksht/cstovo:latest .
+docker build -t valiksht/cstovo:latest .
 
 docker login
 
-docker push valiksht/cstovo::latest
+docker push valiksht/cstovo:latest
 
 # Перезборка на сервере
 docker login
@@ -35,14 +36,18 @@ sudo docker compose -f docker-compose.production.yml ps web
 
 docker-compose exec nginx ls /app/staticfiles
 
-ssh -i ~/.ssh/kstovo_nne/kstovo_key root@130.49.149.206
+ssh -i ~/.ssh/kstovo_nne/kstovo_key root@194.67.66.64
 
 NBCGvCx3wUFhTyJ5
 
 # Отправка файлов на сервер
-scp D:/Dev/rpc_cstovo/docker-compose.production.yml root@130.49.149.206:/root/kstovo_nne
-scp D:/Dev/rpc_cstovo/.env root@130.49.149.206:/root/kstovo_nne
-scp D:/Dev/rpc_cstovo/nginx.conf root@130.49.149.206:/root/kstovo_nne
+scp D:/Dev/rpc_cstovo/docker-compose.production.yml root@194.67.66.64:/root/cstovo
+scp D:/Dev/rpc_cstovo/.env root@194.67.66.64:/root/cstovo
+scp D:/Dev/rpc_cstovo/nginx.conf root@194.67.66.64:/root/cstovo
+scp D:/Dev/kstovo_backup/kstovo_nne_pg_data.tar.gz root@194.67.66.64:/root/cstovo
+scp D:/Dev/kstovo_backup/kstovo_nne_static.tar.gz root@194.67.66.64:/root/cstovo
+scp D:/Dev/kstovo_backup/kstovo_nne_media.tar.gz root@194.67.66.64:/root/cstovo
+
 
 sudo docker compose -f docker-compose.production.yml up -d
 
@@ -58,3 +63,60 @@ nano имя_файла.txt
 
 admin_kstovo
 KstovoPassword2026
+
+
+Спасение базы данных:
+
+mkdir -p /root/volume_backups
+cd /root/volume_backups
+
+sudo docker volume ls | grep pg_data
+
+sudo docker volume ls | grep pg_data
+
+sudo docker run --rm \
+  -v kstovo_nne_pg_data:/data \
+  -v "$(pwd)":/backup \
+  alpine sh -c "cd /data && tar czf /backup/kstovo_nne_pg_data.tar.gz ."
+
+sudo docker volume ls | grep static
+
+sudo docker run --rm \
+  -v kstovo_nne_static:/data \
+  -v "$(pwd)":/backup \
+  alpine sh -c "cd /data && tar czf /backup/kstovo_nne_static.tar.gz ."
+
+sudo docker volume ls | grep media
+
+sudo docker run --rm \
+  -v kstovo_nne_media:/data \
+  -v "$(pwd)":/backup \
+  alpine sh -c "cd /data && tar czf /backup/kstovo_nne_media.tar.gz ."
+
+Скачиваем: 
+
+# docker-compose и nginx.conf
+scp root@130.49.149.206:/root/kstovo_nne/docker-compose.production.yml .
+scp root@130.49.149.206:/root/kstovo_nne/nginx.conf .
+# архивы volume'ов
+scp root@130.49.149.206:/root/backup_volumes/kstovo_nne_pg_data.tar.gz .
+scp root@130.49.149.206:/root/backup_volumes/kstovo_nne_static.tar.gz .
+scp root@130.49.149.206:/root/backup_volumes/kstovo_nne_media.tar.gz .
+
+NBCGvCx3wUFhTyJ5
+
+
+
+
+
+Получаем сертификат \
+sudo certbot certonly --standalone \
+  -d kstovo-nne.ru \
+  -d www.kstovo-nne.ru \
+  --agree-tos \
+  --non-interactive
+
+Ручное обновление сертификата: 
+docker compose -f docker-compose.production.yml stop nginx
+sudo certbot renew
+docker compose -f docker-compose.production.yml up -d nginx
