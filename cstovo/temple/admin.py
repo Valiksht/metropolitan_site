@@ -154,16 +154,46 @@ class NewsImageInLine(admin.TabularInline):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
+    readonly_fields = ['image_preview']
     list_display = (
         'title',
         'on_main',
     )
     list_filter = ('title', 'on_main')
     list_editable = ('on_main',)
+    fields = (
+        'title',
+        'date',
+        'description',
+        'image',
+        'image_preview',
+        'stream',
+        'on_main',
+    )
     inlines = (NewsImageInLine,)
+
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(
+                f'<img src="{obj.image.url}" style="max-height: 200px; max-width: 200px;">'
+            )
+        return "Загрузите изображение"
+
+    image_preview.short_description = 'Превью изображения'
 
 
 @admin.register(BaseImage)
 class BaseImageAdmin(admin.ModelAdmin):
+    readonly_fields = ['image_preview']
     list_display = ('name', 'image')
     list_filter = ('name',)
+    fields = ('name', 'image', 'image_preview')
+
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(
+                f'<img src="{obj.image.url}" style="max-height: 200px; max-width: 200px;">'
+            )
+        return "Загрузите изображение"
+
+    image_preview.short_description = 'Превью изображения'

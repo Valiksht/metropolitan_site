@@ -427,8 +427,8 @@ class BaseImage(models.Model):
         ext = filename.split('.')[-1]
         return f'base_images/{instance.name}.{ext}'
 
-    name = models.CharField(max_length=50, choices=TYPE_IMAGE, unique=True)
-    image = models.ImageField(upload_to=upload_to)
+    name = models.CharField(max_length=50, choices=TYPE_IMAGE, unique=True, verbose_name='Тип изображения')
+    image = models.ImageField(upload_to=upload_to, verbose_name='Изображение')
 
     class Meta:
         verbose_name = 'Базовое изображение'

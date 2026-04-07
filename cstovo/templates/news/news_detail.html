@@ -233,15 +233,16 @@
     <p class="news-detail-date">{{ news.date|date:"d M Y" }}</p>
 
 
-    {% if news.image or news_gallery %}
+    {% if news_gallery %}
+    {% comment %} {% if news.image or news_gallery %} {% endcomment %}
         <div class="image-gallery">
             <div class="gallery-inner">
                 {# Добавляем обложку новости, если она есть #}
-                {% if news.image %}
+                {% comment %} {% if news.image %}
                     <div class="gallery-slide" data-image-src="{{ news.image.url }}"> {# Добавлен data-image-src #}
                         <img src="{{ news.image.url }}" alt="{{ news.title }}">
                     </div>
-                {% endif %}
+                {% endif %} {% endcomment %}
                 {# Добавляем изображения из NewsImage #}
                 {% for img in news_gallery %}
                     <div class="gallery-slide" data-image-src="{{ img.image.url }}"> {# Добавлен data-image-src #}
@@ -271,166 +272,172 @@
 </div>
 {% endblock content %}
 {% block extra_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- СЛАЙДЕР ГАЛЕРЕИ ---
-            const gallery = document.querySelector('.image-gallery');
-            if (!gallery) {
-                const lightboxOverlay = document.getElementById('lightboxOverlay');
-                if (lightboxOverlay) {
-                    lightboxOverlay.remove();
-                }
-                return;
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- ЛАЙТБОКС (общий для главной картинки и галереи) ---
+    const lightboxOverlay = document.getElementById('lightboxOverlay');
+    const lightboxImage   = document.getElementById('lightboxImage');
+    const lightboxClose   = document.querySelector('.lightbox-close');
+    const lightboxPrev    = document.getElementById('lightboxPrev');
+    const lightboxNext    = document.getElementById('lightboxNext');
+    let slides = [];              // сюда сложим .gallery-slide, если есть
+    let currentLightboxIndex = 0; // индекс слайда, который сейчас в лайтбоксе
+    function openLightbox() {
+        if (!lightboxOverlay) return;
+        lightboxOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        if (!lightboxOverlay) return;
+        lightboxOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    function updateLightboxImage() {
+        if (!slides.length) return;
+        const imageUrl = slides[currentLightboxIndex].dataset.imageSrc;
+        if (imageUrl) {
+            lightboxImage.src = imageUrl;
+        }
+    }
+    // --- СЛАЙДЕР ГАЛЕРЕИ (если галерея вообще есть) ---
+    const gallery = document.querySelector('.image-gallery');
+    if (gallery) {
+        const galleryInner = gallery.querySelector('.gallery-inner');
+        const slidesNodeList = gallery.querySelectorAll('.gallery-slide');
+        const prevBtn = gallery.querySelector('.gallery-control.prev');
+        const nextBtn = gallery.querySelector('.gallery-control.next');
+        slides = Array.from(slidesNodeList);
+        const totalSlides = slides.length;
+        let currentIndex = 0;
+        let slidesPerPage = 3;
+        let slideWidth = 0;
+        function getSlidesPerPage() {
+            if (window.innerWidth <= 768) {
+                return 1;
+            } else if (window.innerWidth <= 992) {
+                return 2;
+            } else {
+                return 3;
             }
-            const galleryInner = gallery.querySelector('.gallery-inner');
-            const slides = gallery.querySelectorAll('.gallery-slide'); // Это теперь отдельные блоки для каждой картинки
-            const prevBtn = gallery.querySelector('.gallery-control.prev');
-            const nextBtn = gallery.querySelector('.gallery-control.next');
-            let currentIndex = 0;
-            const totalSlides = slides.length;
-            let slidesPerPage = 3; // <--- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: сколько слайдов видно одновременно
-            let slideWidth = 0; // Ширина одного слайда, будет вычислена динамически
-            // Функция для определения количества видимых слайдов в зависимости от ширины экрана
-            function getSlidesPerPage() {
-                if (window.innerWidth <= 768) {
-                    return 1; // На мобильных 1 фото
-                } else if (window.innerWidth <= 992) {
-                    return 2; // На планшетах 2 фото
-                } else {
-                    return 3; // На больших экранах 3 фото
-                }
+        }
+        function updateSlidesPerPageAndWidth() {
+            slidesPerPage = getSlidesPerPage();
+            slideWidth = gallery.offsetWidth / slidesPerPage;
+            updateGalleryPosition();
+        }
+        function updateGalleryPosition() {
+            const offset = -currentIndex * slideWidth;
+            galleryInner.style.transform = `translateX(${offset}px)`;
+        }
+        function showNextSlide() {
+            if (currentIndex < totalSlides - slidesPerPage) {
+                currentIndex++;
+            } else {
+                currentIndex = 0;
             }
-            // Функция для обновления ширины слайда и количества слайдов на странице
-            function updateSlidesPerPageAndWidth() {
-                slidesPerPage = getSlidesPerPage();
-                // Ширина одного слайда = (ширина контейнера / количество видимых слайдов)
-                slideWidth = gallery.offsetWidth / slidesPerPage; // gallery.offsetWidth - общая видимая ширина
-                updateGalleryPosition(); // Обновить позицию галереи после изменения ширины
+            updateGalleryPosition();
+        }
+        function showPrevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+            } else {
+                currentIndex = totalSlides - slidesPerPage;
             }
-            if (totalSlides <= slidesPerPage) { // Скрываем кнопки, если изображений меньше или равно видимым
-                if (prevBtn) prevBtn.style.display = 'none';
-                if (nextBtn) nextBtn.style.display = 'none';
-                 const lightboxOverlay = document.getElementById('lightboxOverlay');
-                if (lightboxOverlay) {
-                    lightboxOverlay.remove();
-                }
-                return;
-            }
-            // Обновляем позицию галереи
-            function updateGalleryPosition() {
-                const offset = -currentIndex * slideWidth;
-                galleryInner.style.transform = `translateX(${offset}px)`; // Смещение в px
-            }
-            function showNextSlide() {
-                if (currentIndex < totalSlides - slidesPerPage) { // Если еще есть место для сдвига
-                    currentIndex++;
-                } else {
-                    currentIndex = 0; // Возвращаемся в начало, если достигли конца
-                }
-                updateGalleryPosition();
-            }
-            function showPrevSlide() {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                } else {
-                    currentIndex = totalSlides - slidesPerPage; // Переход в конец, если в начале
-                }
-                updateGalleryPosition();
-            }
-            if (nextBtn) {
-                nextBtn.addEventListener('click', showNextSlide);
-            }
-            if (prevBtn) {
-                prevBtn.addEventListener('click', showPrevSlide);
-            }
-            // Инициализация при загрузке
+            updateGalleryPosition();
+        }
+        if (nextBtn) nextBtn.addEventListener('click', showNextSlide);
+        if (prevBtn) prevBtn.addEventListener('click', showPrevSlide);
+        // Инициализация слайдера
+        updateSlidesPerPageAndWidth();
+        window.addEventListener('resize', () => {
             updateSlidesPerPageAndWidth();
-            // Обновление при изменении размера окна
-            window.addEventListener('resize', () => {
-                updateSlidesPerPageAndWidth();
-                // Также убедимся, что currentIndex не выходит за пределы после ресайза
-                if (currentIndex > totalSlides - slidesPerPage) {
-                    currentIndex = totalSlides - slidesPerPage;
-                }
-                updateGalleryPosition();
-            });
-            // --- ДОБАВЛЯЕМ СТРОКИ ДЛЯ АВТОМАТИЧЕСКОГО ЛИСТАНИЯ ЗДЕСЬ ---
-            let autoSlideInterval;
-            const autoSlideDelay = 3000; // Задержка в миллисекундах (5 секунд)
-            function startAutoSlide() {
-                // Очищаем предыдущий интервал, чтобы избежать накопления
-                clearInterval(autoSlideInterval);
-                autoSlideInterval = setInterval(showNextSlide, autoSlideDelay);
+            if (currentIndex > totalSlides - slidesPerPage) {
+                currentIndex = Math.max(totalSlides - slidesPerPage, 0);
             }
-            function stopAutoSlide() {
-                clearInterval(autoSlideInterval);
-            }
-            // Запускаем автолистание при загрузке страницы
+            updateGalleryPosition();
+        });
+        // Автолистание
+        let autoSlideInterval;
+        const autoSlideDelay = 3000;
+        function startAutoSlide() {
+            clearInterval(autoSlideInterval);
+            autoSlideInterval = setInterval(showNextSlide, autoSlideDelay);
+        }
+        function stopAutoSlide() {
+            clearInterval(autoSlideInterval);
+        }
+        if (totalSlides > slidesPerPage) {
             startAutoSlide();
-            // Опционально: Останавливаем автолистание при наведении мыши на галерею
-            // и возобновляем, когда мышь уходит
             gallery.addEventListener('mouseenter', stopAutoSlide);
             gallery.addEventListener('mouseleave', startAutoSlide);
-            // Также останавливаем автолистание при клике на кнопки навигации
             if (nextBtn) nextBtn.addEventListener('click', () => { stopAutoSlide(); startAutoSlide(); });
             if (prevBtn) prevBtn.addEventListener('click', () => { stopAutoSlide(); startAutoSlide(); });
-            // --- ФУНКЦИОНАЛ ЛАЙТБОКСА (ПОЛНОЭКРАННЫЙ ПРОСМОТР) ---
-            const lightboxOverlay = document.getElementById('lightboxOverlay');
-            const lightboxImage = document.getElementById('lightboxImage');
-            const lightboxClose = document.querySelector('.lightbox-close');
-            const lightboxPrev = document.getElementById('lightboxPrev'); // Новая кнопка
-            const lightboxNext = document.getElementById('lightboxNext'); // Новая кнопка
-
-            let currentLightboxIndex = 0;
-
-            function updateLightboxImage() {
-                // Если totalSlides = 0 (на случай, если все изображения удалены)
-                if (totalSlides === 0) return; 
-                
-                const imageUrl = slides[currentLightboxIndex].dataset.imageSrc;
-                if (imageUrl) {
-                    lightboxImage.src = imageUrl;
-                }
-            }
-
-            slides.forEach(slide => { // Используем slides, так как каждый slide кликабелен
-                slide.addEventListener('click', () => {
-                    const imageUrl = slide.dataset.imageSrc;
-                    if (imageUrl) {
-                        lightboxImage.src = imageUrl;
-                        lightboxOverlay.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    }
-                });
-            });
-
-            // Навигация в лайтбоксе - Следующее изображение
-            lightboxNext.addEventListener('click', () => {
-                currentLightboxIndex = (currentLightboxIndex + 1) % totalSlides;
+        } else {
+            // Если изображений мало — просто отключаем кнопки, но ЛАЙТБОКС оставляем
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+        }
+        // Клик по миниатюре в галерее — открываем лайтбокс
+        slides.forEach((slide, index) => {
+            slide.addEventListener('click', () => {
+                currentLightboxIndex = index;
                 updateLightboxImage();
-            });
-            // Навигация в лайтбоксе - Предыдущее изображение
-            lightboxPrev.addEventListener('click', () => {
-                currentLightboxIndex = (currentLightboxIndex - 1 + totalSlides) % totalSlides;
-                updateLightboxImage();
-            });
-
-            lightboxClose.addEventListener('click', () => {
-                lightboxOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-            lightboxOverlay.addEventListener('click', (event) => {
-                if (event.target === lightboxOverlay) {
-                    lightboxOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && lightboxOverlay.classList.contains('active')) {
-                    lightboxOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
+                openLightbox();
             });
         });
-    </script>
+    }
+    // --- КЛИК ПО ГЛАВНОЙ ФОТОГРАФИИ НАД ЗАГОЛОВКОМ ---
+    const mainImage = document.querySelector('.news-detail-image');
+    if (mainImage && lightboxImage && lightboxOverlay) {
+        mainImage.style.cursor = 'pointer'; // чтобы было понятно, что по ней можно кликать
+        mainImage.addEventListener('click', () => {
+            // если галерея есть и главный слайд там присутствует — синхронизируем индекс
+            if (slides.length) {
+                const idx = slides.findIndex(slide => slide.dataset.imageSrc === mainImage.src);
+                if (idx !== -1) {
+                    currentLightboxIndex = idx;
+                    updateLightboxImage();
+                } else {
+                    lightboxImage.src = mainImage.src;
+                }
+            } else {
+                // галереи нет, просто показываем обложку в лайтбоксе
+                lightboxImage.src = mainImage.src;
+            }
+            openLightbox();
+        });
+    }
+    // --- Управление лайтбоксом (кнопки и закрытие) ---
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', () => {
+            if (!slides.length) return;
+            currentLightboxIndex = (currentLightboxIndex + 1) % slides.length;
+            updateLightboxImage();
+        });
+    }
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', () => {
+            if (!slides.length) return;
+            currentLightboxIndex = (currentLightboxIndex - 1 + slides.length) % slides.length;
+            updateLightboxImage();
+        });
+    }
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+    if (lightboxOverlay) {
+        lightboxOverlay.addEventListener('click', (event) => {
+            if (event.target === lightboxOverlay) {
+                closeLightbox();
+            }
+        });
+    }
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && lightboxOverlay && lightboxOverlay.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+});
+</script>
 {% endblock %}

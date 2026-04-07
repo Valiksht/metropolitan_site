@@ -326,7 +326,7 @@
                         </span>
                     {% endif %}
                 </p>
-                <p>{{ news_item.description|truncatechars:150 }}</p> {# Обрезаем описание до 150 символов #}
+                <p>{{ news_item.description|truncatechars:150|safe }}</p> {# Обрезаем описание до 150 символов #}
               </div>
           </a>
 
@@ -364,7 +364,7 @@
                         </span>
                     {% endif %}
                 </p>
-                <p>{{ news_item.description|truncatechars:150 }}</p> {# Обрезаем описание до 150 символов #}
+                <p>{{ news_item.description|truncatechars:150|safe }}</p> {# Обрезаем описание до 150 символов #}
               </div>
           </a>
 

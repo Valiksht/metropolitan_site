@@ -244,7 +244,7 @@
               {% endif %}
             </p>
 
-            <p>{{ news_item.description|truncatechars:150 }}</p>
+            <p>{{ news_item.description|truncatechars:150|safe }}</p>
           </div>
         </a>
       {% empty %}

@@ -166,6 +166,10 @@ class ClergyListView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Духовенство'
         return context
+    
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('order', Lower('last_name'))
+        return qs
 
 
 class ClergyDetailView(DetailView):
